@@ -6,4 +6,4 @@ def bin_digits(value: int, length: int = None):
     """
     length = length or 0
     fmt_str = f"{{0:0{length}b}}"
-    return fmt_str.format(value)
+    return [int(v) for v in fmt_str.format(value)]

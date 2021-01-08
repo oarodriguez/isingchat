@@ -12,7 +12,7 @@ def make_spin_proj_table(num_neighbors: int):
     """Creates the table of spin projections."""
     table = np.empty((2 ** num_neighbors, num_neighbors))
     for idx in range(2 ** num_neighbors):
-        projections = [-2 * int(v) + 1 for v in bin_digits(idx, num_neighbors)]
+        projections = [-2 * v + 1 for v in bin_digits(idx, num_neighbors)]
         table[idx, :] = projections
     return table
 
