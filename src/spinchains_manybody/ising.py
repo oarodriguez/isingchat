@@ -1,8 +1,8 @@
-import typing as t
 from dataclasses import dataclass
 from math import log
 
 import numpy as np
+from numba import njit
 from scipy.linalg import eigvals
 
 from .utils import bin_digits
@@ -24,15 +24,17 @@ class EnergyData:
     helm_free_erg_tl: float
 
 
-def get_energy_data(temp: float,
-                    mag_field: float,
-                    num_spins: int,
-                    hop_params_list: t.Sequence,
-                    spin_proj_table: np.ndarray):
-    """Calculate the Helmholtz free energy of the system."""
+@njit
+def dense_transfer_matrix(temp: float,
+                          mag_field: float,
+                          hop_params_list: np.ndarray,
+                          spin_proj_table: np.ndarray):
+    """Calculate the (dense) transfer matrix of the system.
+
+    We use numba to accelerate the calculations.
+    """
     num_rows, num_neighbors = spin_proj_table.shape
-    w_log_matrix = np.zeros((num_rows, num_rows), dtype="f8")
-    w_log_matrix[0, 0] = 0.
+    w_log_matrix = np.zeros((num_rows, num_rows), dtype=np.float64)
 
     # Start loop.
     for idx in range(num_rows):
@@ -57,6 +59,20 @@ def get_energy_data(temp: float,
 
             # Update matrix element.
             w_log_matrix[idx, jdx] = w_elem
+
+    return w_log_matrix
+
+
+def get_energy_data(temp: float,
+                    mag_field: float,
+                    num_spins: int,
+                    hop_params_list: np.ndarray,
+                    spin_proj_table: np.ndarray):
+    """Calculate the Helmholtz free energy of the system."""
+    w_log_matrix = dense_transfer_matrix(temp,
+                                         mag_field,
+                                         hop_params_list,
+                                         spin_proj_table)
 
     # Normalize matrix elements.
     max_w_log_elem = np.max(w_log_matrix)
