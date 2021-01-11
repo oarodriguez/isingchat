@@ -3,7 +3,6 @@ from math import log
 
 import numpy as np
 from numba import njit
-from scipy.linalg import eigvals
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
 
@@ -27,10 +26,10 @@ class EnergyData:
 
 
 @njit
-def dense_transfer_matrix(temp: float,
-                          mag_field: float,
-                          hop_params_list: np.ndarray,
-                          spin_proj_table: np.ndarray):
+def dense_log_transfer_matrix(temp: float,
+                              mag_field: float,
+                              hop_params_list: np.ndarray,
+                              spin_proj_table: np.ndarray):
     """Calculate the (dense) transfer matrix of the system.
 
     We use numba to accelerate the calculations.
@@ -132,26 +131,23 @@ def norm_sparse_log_transfer_matrix(temp: float,
                       shape=w_shape)
 
 
-def get_energy_data(temp: float,
-                    mag_field: float,
-                    num_spins: int,
-                    hop_params_list: np.ndarray,
-                    spin_proj_table: np.ndarray):
+def energy_thermo_limit_dense(temp: float,
+                              mag_field: float,
+                              hop_params_list: np.ndarray,
+                              spin_proj_table: np.ndarray):
     """Calculate the Helmholtz free energy of the system."""
-    w_log_matrix = dense_transfer_matrix(temp,
-                                         mag_field,
-                                         hop_params_list,
-                                         spin_proj_table)
+    w_log_matrix = dense_log_transfer_matrix(temp,
+                                             mag_field,
+                                             hop_params_list,
+                                             spin_proj_table)
 
     # Normalize matrix elements.
     max_w_log_elem = np.max(w_log_matrix)
     w_log_matrix -= max_w_log_elem
-    w_norm_eigvals = eigvals(np.exp(w_log_matrix)).real
-    max_eigvals = np.max(w_norm_eigvals)
-    z_aux = np.sum(w_norm_eigvals ** num_spins)
-    helm_free_erg = -temp * (log(z_aux) / num_spins + max_w_log_elem)
+    w_norm_eigvals, _ = sparse_eigs(np.exp(w_log_matrix), k=1, which="LM")
+    max_eigvals = np.max(w_norm_eigvals.real)
     helm_free_erg_tl = -temp * (log(max_eigvals) + max_w_log_elem)
-    return EnergyData(helm_free_erg, helm_free_erg_tl)
+    return helm_free_erg_tl
 
 
 def energy_thermo_limit(temp: float,
