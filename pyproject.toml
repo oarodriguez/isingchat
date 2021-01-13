@@ -20,12 +20,17 @@ scipy = "^1.5.4"
 matplotlib = "^3.3.3"
 importlib-metadata = { version = "^3.3.0", python = "<3.8" }
 numba = "^0.52.0"
+click = "^7.1.2"
+"ruamel.yaml" = "^0.16.12"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.1"
 jupyter = "^1.0.0"
 jupyterlab = "^2.2.9"
 jupytext = "^1.7.1"
+
+[tool.poetry.scripts]
+spinchains = "spinchains_manybody.cli:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
