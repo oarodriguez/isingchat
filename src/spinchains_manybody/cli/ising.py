@@ -2,14 +2,14 @@ import pathlib
 from functools import partial
 
 import click
-from spinchains_manybody.exceptions import CLIError
 from spinchains_manybody.io import read_ising_config
 from spinchains_manybody.ising import (
     ParamsGrid, eval_energy, grid_func_base
 )
-from spinchains_manybody.utils import (
-    DaskProgressBar, RichProgressBar, columns,
-    console
+
+from .exceptions import CLIError
+from .utils import (
+    DaskProgressBar, RichProgressBar, columns, console
 )
 
 
