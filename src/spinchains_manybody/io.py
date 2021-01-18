@@ -1,5 +1,4 @@
 import typing as t
-from pathlib import Path
 
 import numpy as np
 from ruamel.yaml import YAML
@@ -26,18 +25,8 @@ def read_param(param_config: t.Union[float, dict, t.Iterable],
     return np.asarray(param_config, dtype=dtype)
 
 
-def read_ising_config(config_path: Path):
+def read_ising_config(config_data: dict):
     """Read a config file suitable for modeling the 1D-Ising model."""
-    if config_path.is_dir():
-        config_path = config_path / "config.yml"
-        if config_path.is_dir():
-            raise ValueError(f"{config_path} is not a file")
-        if not config_path.exists():
-            raise FileNotFoundError
-
-    with config_path.open("r") as cfp:
-        config_data = yaml.load(cfp)
-
     system_info = config_data["system"]
     hamiltonian_params = system_info["hamiltonian"]
     # Read the hopping terms.
