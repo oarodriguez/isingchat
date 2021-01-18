@@ -1,7 +1,11 @@
+import typing as t
+from collections import Iterable
 from dataclasses import dataclass
+from functools import partial
 from math import log
 
 import numpy as np
+from dask import bag
 from numba import njit
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
@@ -177,3 +181,54 @@ def energy_thermo_limit(temp: float,
     max_eigvals = w_norm_eigvals.real[0]
     helm_free_erg_tl = -temp * (log(max_eigvals) + max_w_log_elem)
     return helm_free_erg_tl
+
+
+@dataclass
+class ParamsGrid(Iterable):
+    """"""
+    temperature: np.ndarray
+    magnetic_field: np.ndarray
+
+    @property
+    def shape(self):
+        return self.temperature.shape + self.magnetic_field.shape
+
+    @property
+    def size(self):
+        """The grid total size."""
+        return int(np.prod(self.shape))
+
+    def __iter__(self):
+        """"""
+        grid_shape = self.shape
+        for ndindex in np.ndindex(*grid_shape):
+            temp_idx, mag_field_idx = ndindex
+            yield (
+                self.temperature[temp_idx],
+                self.magnetic_field[mag_field_idx]
+            )
+
+
+def grid_func_base(params: t.Tuple[float, float],
+                   hop_params: np.ndarray):
+    """"""
+    temperature, magnetic_field = params
+    num_neighbors = len(hop_params)
+    spin_proj_table = make_spin_proj_table(num_neighbors)
+    return energy_thermo_limit(temperature,
+                               magnetic_field,
+                               hop_params_list=hop_params,
+                               spin_proj_table=spin_proj_table)
+
+
+def eval_energy(params_grid: ParamsGrid,
+                hop_params: np.ndarray):
+    """"""
+    grid_func = partial(grid_func_base,
+                        hop_params=hop_params)
+    # Evaluate the grid using a multidimensional iterator. This
+    # way we do not allocate memory for all the combinations of
+    # parameter values that form the grid.
+    params_bag = bag.from_sequence(params_grid)
+    chi_square_data = params_bag.map(grid_func).compute()
+    return chi_square_data
