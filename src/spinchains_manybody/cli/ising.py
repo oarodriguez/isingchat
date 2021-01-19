@@ -17,6 +17,7 @@ from spinchains_manybody.ising import (
     ParamsGrid, eval_energy, grid_func_base
 )
 
+from .common import Paths
 from .exceptions import CLIError
 from .utils import (
     DaskProgressBar, RichProgressBar, columns, console
@@ -30,48 +31,29 @@ yaml.default_flow_style = False
 @click.command()
 @click.argument("config-path",
                 type=click.Path(exists=True,
-                                dir_okay=True,
+                                dir_okay=False,
                                 resolve_path=True))
-@click.option("-o", "--output-dir",
-              type=click.Path(exists=False),
-              help="A directory where the results will be saved. The "
-                   "directory will be created if it does not exist. If "
-                   "omitted, the results will be saved in the same location "
-                   "as the configuration file.")
 @click.option("-f", "--force",
               is_flag=True,
               help="If given, any result stored in the output directory will "
                    "be overwritten.")
 def ising(config_path: str,
-          output_dir: str,
           force: bool):
     """Properties of the 1D Ising chain with long-range interactions.
 
     CONFIG_PATH: The path to the configuration file.
     """
+    # Paths to the files used for saving the results data.
     _config_path = pathlib.Path(config_path)
-    if _config_path.is_dir():
-        _config_path = _config_path / "ising-chain-config.yml"
-        if _config_path.is_dir():
-            raise CLIError(f"{_config_path} is not a file")
-
-    # By default, the output directory is that where the configuration
-    # file is located.
-    if output_dir is None:
-        _output_dir = _config_path.parent
-    else:
-        _output_dir = pathlib.Path(output_dir).resolve()
+    paths = Paths.from_path(_config_path)
 
     # Handle flow if the force flag is enabled.
-    _output_config_path = _output_dir / "ising-chain-config.yml"
-    _output_data_path = _output_dir / "ising-chain-data.h5"
+    _config_path = paths.config
+    _energy_data_path = paths.energy
     if not force:
-        if _output_config_path.exists():
-            raise CLIError("an 'ising-chain-config.yml' file exists in "
-                           "the output path")
-        if _output_data_path.exists():
-            raise CLIError("an 'ising-chain-data.h5' file exists in "
-                           "the output path")
+        if _energy_data_path.exists():
+            raise CLIError(f"the file '{_energy_data_path.name}' with results "
+                           f"exists in the output directory")
 
     with _config_path.open("r") as cfp:
         config_info = yaml.load(cfp)
@@ -135,19 +117,10 @@ def ising(config_path: str,
     grid_shape = params_grid.shape
     energy_array: np.ndarray = np.asarray(energy_data).reshape(grid_shape)
 
-    # Create output directory.
-    _output_dir.mkdir(exist_ok=True)
-
-    # Save the configuration file.
-    with _output_config_path.open("w") as conf_fp:
-        yaml.dump(config_info, conf_fp)
-    console.print(Padding(f"Configuration file '{_output_config_path}' saved",
-                          pad=(0, 1)))
-
     # Export the data.
-    with h5py.File(_output_data_path, "w") as h5_file:
+    with h5py.File(_energy_data_path, "w") as h5_file:
         save_energy_data(energy_array, h5_file)
-    console.print(Padding(f"Results data file '{_output_data_path}' saved",
+    console.print(Padding(f"Results data file '{_energy_data_path}' saved",
                           pad=(0, 1)))
 
     # Display a nice "Completed" message.
