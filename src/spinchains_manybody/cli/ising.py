@@ -28,17 +28,50 @@ yaml.default_flow_style = False
 
 
 @click.command()
-@click.argument("config-path", type=click.Path(exists=True,
-                                               dir_okay=True,
-                                               resolve_path=True))
-def ising(config_path: str):
-    """Properties of the 1D Ising chain with long-range interactions."""
+@click.argument("config-path",
+                type=click.Path(exists=True,
+                                dir_okay=True,
+                                resolve_path=True))
+@click.option("-o", "--output-dir",
+              type=click.Path(exists=False),
+              help="A directory where the results will be saved. The "
+                   "directory will be created if it does not exist. If "
+                   "omitted, the results will be saved in the same location "
+                   "as the configuration file.")
+@click.option("-f", "--force",
+              is_flag=True,
+              help="If given, any result stored in the output directory will "
+                   "be overwritten.")
+def ising(config_path: str,
+          output_dir: str,
+          force: bool):
+    """Properties of the 1D Ising chain with long-range interactions.
+
+    CONFIG_PATH: The path to the configuration file.
+    """
     _config_path = pathlib.Path(config_path)
     if _config_path.is_dir():
-        _config_path = _config_path / "config.yml"
-        config_path = _config_path / "config.yml"
+        _config_path = _config_path / "ising-chain-config.yml"
         if _config_path.is_dir():
-            raise CLIError(f"{config_path} is not a file")
+            raise CLIError(f"{_config_path} is not a file")
+
+    # By default, the output directory is that where the configuration
+    # file is located.
+    if output_dir is None:
+        _output_dir = _config_path.parent
+    else:
+        _output_dir = pathlib.Path(output_dir).resolve()
+
+    # Handle flow if the force flag is enabled.
+    _output_config_path = _output_dir / "ising-chain-config.yml"
+    _output_data_path = _output_dir / "ising-chain-data.h5"
+    if not force:
+        if _output_config_path.exists():
+            raise CLIError("an 'ising-chain-config.yml' file exists in "
+                           "the output path")
+        if _output_data_path.exists():
+            raise CLIError("an 'ising-chain-data.h5' file exists in "
+                           "the output path")
 
     with _config_path.open("r") as cfp:
         config_info = yaml.load(cfp)
@@ -56,6 +89,8 @@ def ising(config_path: str):
     title_text = Text("Ising chain with beyond nearest-neighbor interactions",
                       justify="center", style="bold red")
     title_panel = Panel(title_text, box=box.DOUBLE_EDGE)
+
+    # The grid used to arrange the configuration info.
     config_grid = Table.grid(expand=True, padding=(0, 0), pad_edge=True)
     config_grid.add_column(ratio=1)
     config_grid.add_column(ratio=4)
@@ -68,11 +103,11 @@ def ising(config_path: str):
                            highlighter=console.highlighter,
                            justify="left")
     config_grid.add_row("Config Preview", pretty_config)
-
-    # The grid used to arrange the configuration info.
     config_panel = Panel(config_grid,
                          title="[yellow]Execution Summary",
                          title_align="left")
+
+    # Display the title and the configuration summary.
     console.print(title_panel)
     console.print(config_panel)
 
@@ -100,10 +135,23 @@ def ising(config_path: str):
     grid_shape = params_grid.shape
     energy_array: np.ndarray = np.asarray(energy_data).reshape(grid_shape)
 
-    # Export the data.
-    energy_data_path = _config_path.parent / "ising-data.h5"
-    with h5py.File(energy_data_path, "w") as h5_file:
-        save_energy_data(energy_array, h5_file)
+    # Create output directory.
+    _output_dir.mkdir(exist_ok=True)
 
-    console.print(Padding("🎉 [green bold]Execution completed 🎉",
-                          pad=(1, 1)), justify="center")
+    # Save the configuration file.
+    with _output_config_path.open("w") as conf_fp:
+        yaml.dump(config_info, conf_fp)
+    console.print(Padding(f"Configuration file '{_output_config_path}' saved",
+                          pad=(0, 1)))
+
+    # Export the data.
+    with h5py.File(_output_data_path, "w") as h5_file:
+        save_energy_data(energy_array, h5_file)
+    console.print(Padding(f"Results data file '{_output_data_path}' saved",
+                          pad=(0, 1)))
+
+    # Display a nice "Completed" message.
+    completed_text = Padding("🎉 [green bold]Execution completed 🎉",
+                             pad=1)
+    completed_panel = Panel(completed_text, box=box.DOUBLE_EDGE, expand=False)
+    console.print(completed_panel, justify="center")
