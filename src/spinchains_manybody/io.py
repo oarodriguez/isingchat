@@ -1,5 +1,6 @@
 import typing as t
 
+import h5py
 import numpy as np
 from ruamel.yaml import YAML
 
@@ -51,3 +52,9 @@ def read_ising_config(config_data: dict):
         "exec": exec_config,
         "metadata": metadata
     }
+
+
+def save_energy_data(energy: np.ndarray,
+                     h5_file: h5py.File):
+    """Save the energy data into an HDF5 file."""
+    h5_file.create_dataset("energy", data=energy)

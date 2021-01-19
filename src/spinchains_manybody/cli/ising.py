@@ -3,6 +3,8 @@ import pathlib
 from functools import partial
 
 import click
+import h5py
+import numpy as np
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
@@ -10,7 +12,7 @@ from rich.pretty import Pretty
 from rich.table import Table
 from rich.text import Text
 from ruamel.yaml import YAML
-from spinchains_manybody.io import read_ising_config
+from spinchains_manybody.io import read_ising_config, save_energy_data
 from spinchains_manybody.ising import (
     ParamsGrid, eval_energy, grid_func_base
 )
@@ -21,7 +23,7 @@ from .utils import (
 )
 
 yaml = YAML()
-yaml.indent = 4
+yaml.indent = 2
 yaml.default_flow_style = False
 
 
@@ -95,8 +97,13 @@ def ising(config_path: str):
         with DaskProgressBar():
             energy_data = eval_energy(params_grid, hop_params)
 
+    grid_shape = params_grid.shape
+    energy_array: np.ndarray = np.asarray(energy_data).reshape(grid_shape)
+
     # Export the data.
-    # TODO.
+    energy_data_path = _config_path.parent / "ising-data.h5"
+    with h5py.File(energy_data_path, "w") as h5_file:
+        save_energy_data(energy_array, h5_file)
 
     console.print(Padding("🎉 [green bold]Execution completed 🎉",
                           pad=(1, 1)), justify="center")
