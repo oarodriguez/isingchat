@@ -5,6 +5,19 @@ from pathlib import Path
 PROJECT_DIR_VAR = "PROJECT_DIR"
 PROJECT_DATA_DIR_VAR = "PROJECT_DATA_DIR"
 PROJECT_MEDIA_DIR_VAR = "PROJECT_MEDIA_DIR"
+PROJECT_EDITABLE_MODE_VAR = "PROJECT_EDITABLE_MODE"
+
+# NOTICE: The project_dir variable refers to our project base directory
+#  only when we install our project package in editable mode, i.e.,
+#  when we execute
+#  -
+#       poetry install
+#  -
+#  in the current python environment. Otherwise, if we should install
+#  this package in non-editable mode, the built-in variable __file__ would
+#  point to a different place.
+file_dir = Path(__file__).parent
+project_dir_edit = file_dir.parent.parent
 
 
 @dataclass(frozen=True)
@@ -28,11 +41,13 @@ class Environ:
         """"""
         project_dir_var = os.getenv(PROJECT_DIR_VAR)
         if project_dir_var is None:
-            # NOTICE: When there is no PROJECT_DIR environment variable
-            #  defined,  the
-            #  current working directory will be used as the project
-            #  directory.
-            project_dir = Path.cwd().absolute()
+            if bool(os.getenv(PROJECT_EDITABLE_MODE_VAR)):
+                project_dir = project_dir_edit.absolute()
+            else:
+                # If the library is not installed in editable mode, the
+                # current working directory will be used as the project
+                # directory.
+                project_dir = Path.cwd().absolute()
         else:
             project_dir = Path(project_dir_var).resolve()
         data_dir_env = os.getenv(PROJECT_DATA_DIR_VAR)
