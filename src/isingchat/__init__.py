@@ -5,7 +5,7 @@ except ModuleNotFoundError:
 
 from ._environ import Environ
 
-__version__ = importlib_metadata.version("spinchains_manybody")
+__version__ = importlib_metadata.version("isingchat")
 
 # A variable that holds several useful environment variables for the project.
 environ = Environ.from_environ()

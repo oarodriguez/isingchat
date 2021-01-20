@@ -12,8 +12,8 @@ from rich.pretty import Pretty
 from rich.table import Table
 from rich.text import Text
 from ruamel.yaml import YAML
-from spinchains_manybody.io import read_ising_config, save_energy_data
-from spinchains_manybody.ising import (
+from isingchat.io import read_ising_config, save_energy_data
+from isingchat.ising import (
     ParamsGrid, eval_energy, grid_func_base
 )
 

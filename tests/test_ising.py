@@ -1,5 +1,5 @@
 import numpy as np
-from spinchains_manybody.ising import (
+from isingchat.ising import (
     energy_thermo_limit_dense, make_spin_proj_table
 )
 

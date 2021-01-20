@@ -1,4 +1,4 @@
-from spinchains_manybody.utils import bin_digits
+from isingchat.utils import bin_digits
 
 
 def test_bin_digits():

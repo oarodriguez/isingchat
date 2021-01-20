@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "spinchains-manybody"
+name = "isingchat"
 version = "0.1.0"
 description = ""
 authors = ["Omar Abel Rodríguez-López <oarodriguez.mx@gmail.com>"]
 
 packages = [
-  { include = "spinchains_manybody", from = "src" },
+  { include = "isingchat", from = "src" },
 ]
 
 [tool.poetry.dependencies]
@@ -33,7 +33,7 @@ jupyterlab = "^2.2.9"
 jupytext = "^1.7.1"
 
 [tool.poetry.scripts]
-spinchains = "spinchains_manybody.cli:main"
+isingchat = "isingchat.cli:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
