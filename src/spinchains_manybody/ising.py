@@ -29,7 +29,7 @@ class EnergyData:
     helm_free_erg_tl: float
 
 
-@njit
+@njit(cache=True)
 def dense_log_transfer_matrix(temp: float,
                               mag_field: float,
                               hop_params_list: np.ndarray,
@@ -68,7 +68,7 @@ def dense_log_transfer_matrix(temp: float,
     return w_log_matrix
 
 
-@njit
+@njit(cache=True)
 def _csr_log_transfer_matrix_parts(temp: float,
                                    mag_field: float,
                                    hop_params_list: np.ndarray,
