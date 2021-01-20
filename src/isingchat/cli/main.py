@@ -2,10 +2,10 @@ import pathlib
 
 import click
 
-from .ising import ising
+from .run import run
 
 COMMANDS = {
-    "ising": ising
+    "run": run
 }
 
 file_dir = pathlib.Path(__file__).parent

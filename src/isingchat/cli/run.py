@@ -5,6 +5,10 @@ from functools import partial
 import click
 import h5py
 import numpy as np
+from isingchat.io import read_ising_config, save_energy_data
+from isingchat.ising import (
+    ParamsGrid, eval_energy, grid_func_base
+)
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
@@ -12,10 +16,6 @@ from rich.pretty import Pretty
 from rich.table import Table
 from rich.text import Text
 from ruamel.yaml import YAML
-from isingchat.io import read_ising_config, save_energy_data
-from isingchat.ising import (
-    ParamsGrid, eval_energy, grid_func_base
-)
 
 from .common import Paths
 from .exceptions import CLIError
@@ -37,8 +37,8 @@ yaml.default_flow_style = False
               is_flag=True,
               help="If given, any result stored in the output directory will "
                    "be overwritten.")
-def ising(config_path: str,
-          force: bool):
+def run(config_path: str,
+        force: bool):
     """Properties of the 1D Ising chain with long-range interactions.
 
     CONFIG_PATH: The path to the configuration file.
