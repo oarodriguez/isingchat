@@ -7,8 +7,9 @@ import h5py
 import numpy as np
 from isingchat.io import read_ising_config, save_energy_data
 from isingchat.ising import (
-    ParamsGrid, eval_energy, grid_func_base
+    eval_energy, grid_func_base
 )
+from isingchat.exec_ import ParamsGrid
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
