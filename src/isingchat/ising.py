@@ -71,7 +71,7 @@ def dense_log_transfer_matrix(temp: float,
 @njit(cache=True)
 def _csr_log_transfer_matrix_parts(temp: float,
                                    mag_field: float,
-                                   hop_params_list: np.ndarray,
+                                   interactions: np.ndarray,
                                    spin_proj_table: np.ndarray):
     """Calculate the parts of the sparse transfer matrix.
 
@@ -100,7 +100,7 @@ def _csr_log_transfer_matrix_parts(temp: float,
             proj_one = spin_proj_table[idx, 0]
             w_elem = (mag_field * proj_one / temp)
             for edx in range(num_neighbors):
-                hop_param = hop_params_list[edx]
+                hop_param = interactions[edx]
                 proj_two = spin_proj_table[jdx, edx]
                 w_elem += (hop_param * proj_one * proj_two / temp)
 
@@ -117,14 +117,14 @@ def _csr_log_transfer_matrix_parts(temp: float,
 
 def norm_sparse_log_transfer_matrix(temp: float,
                                     mag_field: float,
-                                    hop_params_list: np.ndarray,
+                                    interactions: np.ndarray,
                                     spin_proj_table: np.ndarray):
     """Calculate the (sparse) normalized transfer matrix."""
     num_rows, _ = spin_proj_table.shape
     nnz_elems, nnz_rows, nnz_cols = \
         _csr_log_transfer_matrix_parts(temp,
                                        mag_field,
-                                       hop_params_list,
+                                       interactions,
                                        spin_proj_table)
 
     # Normalize matrix elements.
@@ -137,12 +137,12 @@ def norm_sparse_log_transfer_matrix(temp: float,
 
 def energy_thermo_limit_dense(temp: float,
                               mag_field: float,
-                              hop_params_list: np.ndarray,
+                              interactions: np.ndarray,
                               spin_proj_table: np.ndarray):
     """Calculate the Helmholtz free energy of the system."""
     w_log_matrix = dense_log_transfer_matrix(temp,
                                              mag_field,
-                                             hop_params_list,
+                                             interactions,
                                              spin_proj_table)
 
     # Normalize matrix elements.
@@ -156,14 +156,14 @@ def energy_thermo_limit_dense(temp: float,
 
 def energy_thermo_limit(temp: float,
                         mag_field: float,
-                        hop_params_list: np.ndarray,
+                        interactions: np.ndarray,
                         spin_proj_table: np.ndarray):
     """Calculate the Helmholtz free energy of the system."""
     num_rows, _ = spin_proj_table.shape
     nnz_elems, nnz_rows, nnz_cols = \
         _csr_log_transfer_matrix_parts(temp,
                                        mag_field,
-                                       hop_params_list,
+                                       interactions,
                                        spin_proj_table)
 
     # Normalize nonzero matrix elements.
@@ -184,22 +184,22 @@ def energy_thermo_limit(temp: float,
 
 
 def grid_func_base(params: t.Tuple[float, float],
-                   hop_params: np.ndarray):
+                   interactions: np.ndarray):
     """"""
     temperature, magnetic_field = params
-    num_neighbors = len(hop_params)
+    num_neighbors = len(interactions)
     spin_proj_table = make_spin_proj_table(num_neighbors)
     return energy_thermo_limit(temperature,
                                magnetic_field,
-                               hop_params_list=hop_params,
+                               interactions=interactions,
                                spin_proj_table=spin_proj_table)
 
 
 def eval_energy(params_grid: ParamsGrid,
-                hop_params: np.ndarray):
+                interactions: np.ndarray):
     """"""
     grid_func = partial(grid_func_base,
-                        hop_params=hop_params)
+                        interactions=interactions)
     # Evaluate the grid using a multidimensional iterator. This
     # way we do not allocate memory for all the combinations of
     # parameter values that form the grid.

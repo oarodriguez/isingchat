@@ -29,10 +29,10 @@ def read_param(param_config: t.Union[float, dict, t.Iterable],
 def read_ising_config(config_data: dict):
     """Read a config file suitable for modeling the 1D-Ising model."""
     system_info = config_data["system"]
-    hamiltonian_params = system_info["hamiltonian"]
+    hamiltonian_params = system_info["params"]
     # Read the hopping terms.
-    hop_params_config = hamiltonian_params["hop_params_list"]
-    hop_params = read_param(hop_params_config)
+    interactions_config = hamiltonian_params["interactions"]
+    interactions = read_param(interactions_config)
     # Read the temperature.
     temp_config = hamiltonian_params["temperature"]
     temperature = read_param(temp_config)
@@ -45,7 +45,7 @@ def read_ising_config(config_data: dict):
     metadata = config_data.get("metadata")
     return {
         "system": {
-            "hop_params": hop_params,
+            "interactions": interactions,
             "temperature": temperature,
             "magnetic_field": magnetic_field
         },
@@ -54,7 +54,7 @@ def read_ising_config(config_data: dict):
     }
 
 
-def save_energy_data(energy: np.ndarray,
-                     h5_file: h5py.File):
+def save_free_energy_data(energy: np.ndarray,
+                          h5_file: h5py.File):
     """Save the energy data into an HDF5 file."""
-    h5_file.create_dataset("energy", data=energy)
+    h5_file.create_dataset("free-energy", data=energy)

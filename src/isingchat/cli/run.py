@@ -5,11 +5,11 @@ from functools import partial
 import click
 import h5py
 import numpy as np
-from isingchat.io import read_ising_config, save_energy_data
+from isingchat.exec_ import ParamsGrid
+from isingchat.io import read_ising_config, save_free_energy_data
 from isingchat.ising import (
     eval_energy, grid_func_base
 )
-from isingchat.exec_ import ParamsGrid
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
@@ -50,7 +50,7 @@ def run(config_path: str,
 
     # Handle flow if the force flag is enabled.
     _config_path = paths.config
-    _energy_data_path = paths.energy
+    _energy_data_path = paths.free_energy
     if not force:
         if _energy_data_path.exists():
             raise CLIError(f"the file '{_energy_data_path.name}' with results "
@@ -64,7 +64,7 @@ def run(config_path: str,
     system_data = config_data["system"]
     temperature = system_data["temperature"]
     magnetic_field = system_data["magnetic_field"]
-    hop_params = system_data["hop_params"]
+    interactions = system_data["interactions"]
     exec_config = config_data["exec"]
     exec_parallel = exec_config["parallel"]
 
@@ -105,7 +105,7 @@ def run(config_path: str,
         with progress_bar:
             energy_data = []
             grid_func = partial(grid_func_base,
-                                hop_params=hop_params)
+                                interactions=interactions)
             grid_map = map(grid_func, params_grid)
             for energy_value in grid_map:
                 energy_data.append(energy_value)
@@ -113,14 +113,14 @@ def run(config_path: str,
                 progress_bar.refresh()
     else:
         with DaskProgressBar():
-            energy_data = eval_energy(params_grid, hop_params)
+            energy_data = eval_energy(params_grid, interactions)
 
     grid_shape = params_grid.shape
     energy_array: np.ndarray = np.asarray(energy_data).reshape(grid_shape)
 
     # Export the data.
     with h5py.File(_energy_data_path, "w") as h5_file:
-        save_energy_data(energy_array, h5_file)
+        save_free_energy_data(energy_array, h5_file)
     console.print(Padding(f"Results data file '{_energy_data_path}' saved",
                           pad=(0, 1)))
 

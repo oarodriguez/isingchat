@@ -9,10 +9,10 @@ def test_energy_data():
     temp = 0.6
     mag_field = 1.5
     int_power = 2
-    hop_params_list = np.array([1, 0.5]) ** int_power
-    num_neighbors = len(hop_params_list)
+    interactions = np.array([1, 0.5]) ** int_power
+    num_neighbors = len(interactions)
     spin_proj_table = make_spin_proj_table(num_neighbors)
     data = energy_thermo_limit_dense(temp, mag_field,
-                                     hop_params_list=hop_params_list,
+                                     interactions=interactions,
                                      spin_proj_table=spin_proj_table)
     print(data)
