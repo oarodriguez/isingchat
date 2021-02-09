@@ -19,9 +19,19 @@ def read_param(param_config: t.Union[float, dict, t.Iterable],
     if isinstance(param_config, dict):
         param_min = param_config["min"]
         param_max = param_config["max"]
-        num_samples = param_config["num_samples"]
-        return np.linspace(param_min, param_max, num=num_samples,
-                           dtype=dtype)
+        num_samples = param_config.get("num_samples", None)
+        step_size = param_config.get("step_size", None)
+        if num_samples is None and step_size is None:
+            raise ValueError("a value for 'step_size' or 'num_samples' is "
+                             "required")
+        if num_samples and step_size:
+            raise ValueError("'step_size' and 'num_samples' are not "
+                             "compatible; give only one of them")
+        elif num_samples:
+            return np.linspace(param_min, param_max, num=num_samples,
+                               dtype=dtype)
+        else:
+            return np.arange(param_min, param_max, step_size)
     # Try to convert directly to an array.
     return np.asarray(param_config, dtype=dtype)
 
