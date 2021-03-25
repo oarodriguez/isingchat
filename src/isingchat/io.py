@@ -50,7 +50,11 @@ def read_ising_config(config_data: dict):
     magnetic_field_config = hamiltonian_params["magnetic_field"]
     magnetic_field = read_param(magnetic_field_config)
     # Execution data
-    exec_config = config_data["exec"]
+    exec_config = config_data.get("exec", None)
+    if exec_config is None:
+        exec_config = {
+            "parallel": False
+        }
     # Metadata
     metadata = config_data.get("metadata")
     return {

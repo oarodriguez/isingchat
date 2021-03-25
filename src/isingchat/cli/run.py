@@ -67,6 +67,7 @@ def run(config_path: str,
     interactions = system_data["interactions"]
     exec_config = config_data["exec"]
     exec_parallel = exec_config["parallel"]
+    num_workers = exec_config.get("num_workers")
 
     # CLI title message.
     title_text = Text("Ising chain with beyond nearest-neighbor interactions",
@@ -113,7 +114,8 @@ def run(config_path: str,
                 progress_bar.refresh()
     else:
         with DaskProgressBar():
-            energy_data = eval_energy(params_grid, interactions)
+            energy_data = eval_energy(params_grid, interactions,
+                                      num_workers=num_workers)
 
     grid_shape = params_grid.shape
     energy_array: np.ndarray = np.asarray(energy_data).reshape(grid_shape)

@@ -196,7 +196,8 @@ def grid_func_base(params: t.Tuple[float, float],
 
 
 def eval_energy(params_grid: ParamsGrid,
-                interactions: np.ndarray):
+                interactions: np.ndarray,
+                num_workers: int = None):
     """"""
     grid_func = partial(grid_func_base,
                         interactions=interactions)
@@ -204,5 +205,8 @@ def eval_energy(params_grid: ParamsGrid,
     # way we do not allocate memory for all the combinations of
     # parameter values that form the grid.
     params_bag = bag.from_sequence(params_grid)
-    chi_square_data = params_bag.map(grid_func).compute()
+    compute_kwargs = {}
+    if num_workers is not None:
+        compute_kwargs["num_workers"] = num_workers
+    chi_square_data = params_bag.map(grid_func).compute(**compute_kwargs)
     return chi_square_data
