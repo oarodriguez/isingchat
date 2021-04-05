@@ -2,9 +2,7 @@ from matplotlib import style
 
 from . import default
 
-STYLES = {
-    "default": default.STYLE
-}
+STYLES = {"default": default.STYLE}
 
 
 def use(style_name: str):

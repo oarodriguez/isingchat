@@ -7,6 +7,7 @@ import numpy as np
 @dataclass
 class ParamsGrid(Iterable):
     """"""
+
     temperature: np.ndarray
     magnetic_field: np.ndarray
 
@@ -26,5 +27,5 @@ class ParamsGrid(Iterable):
             temp_idx, mag_field_idx = ndindex
             yield (
                 self.temperature[temp_idx],
-                self.magnetic_field[mag_field_idx]
+                self.magnetic_field[mag_field_idx],
             )

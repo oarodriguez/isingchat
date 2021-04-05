@@ -9,8 +9,10 @@ yaml.indent = 4
 yaml.default_flow_style = False
 
 
-def read_param(param_config: t.Union[float, dict, t.Iterable],
-               dtype: np.dtype = np.float64):
+def read_param(
+    param_config: t.Union[float, dict, t.Iterable],
+    dtype: np.dtype = np.float64,
+):
     """"""
     # A single value becomes a one-element array.
     if isinstance(param_config, (float, int)):
@@ -22,14 +24,18 @@ def read_param(param_config: t.Union[float, dict, t.Iterable],
         num_samples = param_config.get("num_samples", None)
         step_size = param_config.get("step_size", None)
         if num_samples is None and step_size is None:
-            raise ValueError("a value for 'step_size' or 'num_samples' is "
-                             "required")
+            raise ValueError(
+                "a value for 'step_size' or 'num_samples' is " "required"
+            )
         if num_samples and step_size:
-            raise ValueError("'step_size' and 'num_samples' are not "
-                             "compatible; give only one of them")
+            raise ValueError(
+                "'step_size' and 'num_samples' are not "
+                "compatible; give only one of them"
+            )
         elif num_samples:
-            return np.linspace(param_min, param_max, num=num_samples,
-                               dtype=dtype)
+            return np.linspace(
+                param_min, param_max, num=num_samples, dtype=dtype
+            )
         else:
             return np.arange(param_min, param_max, step_size)
     # Try to convert directly to an array.
@@ -52,23 +58,20 @@ def read_ising_config(config_data: dict):
     # Execution data
     exec_config = config_data.get("exec", None)
     if exec_config is None:
-        exec_config = {
-            "parallel": False
-        }
+        exec_config = {"parallel": False}
     # Metadata
     metadata = config_data.get("metadata")
     return {
         "system": {
             "interactions": interactions,
             "temperature": temperature,
-            "magnetic_field": magnetic_field
+            "magnetic_field": magnetic_field,
         },
         "exec": exec_config,
-        "metadata": metadata
+        "metadata": metadata,
     }
 
 
-def save_free_energy_data(energy: np.ndarray,
-                          h5_file: h5py.File):
+def save_free_energy_data(energy: np.ndarray, h5_file: h5py.File):
     """Save the energy data into an HDF5 file."""
     h5_file.create_dataset("free-energy", data=energy)

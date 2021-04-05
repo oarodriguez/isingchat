@@ -4,9 +4,7 @@ import click
 
 from .run import run
 
-COMMANDS = {
-    "run": run
-}
+COMMANDS = {"run": run}
 
 file_dir = pathlib.Path(__file__).parent
 

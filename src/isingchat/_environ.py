@@ -23,6 +23,7 @@ project_dir_edit = file_dir.parent.parent
 @dataclass(frozen=True)
 class Environ:
     """Groups the main environment variables of the project."""
+
     PROJECT_DIR: Path
     DATA_DIR: Path = None
     MEDIA_DIR: Path = None
@@ -52,8 +53,10 @@ class Environ:
             project_dir = Path(project_dir_var).resolve()
         data_dir_env = os.getenv(PROJECT_DATA_DIR_VAR)
         media_dir_env = os.getenv(PROJECT_DATA_DIR_VAR)
-        data_dir = None if data_dir_env is None \
-            else Path(data_dir_env).absolute()
-        media_dir = None if media_dir_env is None \
-            else Path(media_dir_env).absolute()
+        data_dir = (
+            None if data_dir_env is None else Path(data_dir_env).absolute()
+        )
+        media_dir = (
+            None if media_dir_env is None else Path(media_dir_env).absolute()
+        )
         return cls(project_dir, data_dir, media_dir)
