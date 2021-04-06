@@ -340,12 +340,11 @@ def grid_func_base(params: t.Tuple[float, float], interactions: np.ndarray):
     """"""
     temperature, magnetic_field = params
     num_neighbors = len(interactions)
-    spin_proj_table = make_spin_proj_table(num_neighbors)
-    return energy_thermo_limit(
+    return energy_thermo_limit_fast(
         temperature,
         magnetic_field,
         interactions=interactions,
-        spin_proj_table=spin_proj_table,
+        num_neighbors=num_neighbors,
     )
 
 
