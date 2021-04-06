@@ -22,6 +22,82 @@ def make_spin_proj_table(num_neighbors: int):
     return table
 
 
+# See https://realpython.com/python-bitwise-operators/#bitmasks.
+@njit
+def set_bit(value: int, bit_index: int):
+    """Set the bit in ``value`` at the position ``bit_index``."""
+    return value | (1 << bit_index)
+
+
+@njit
+def clear_bit(value: int, bit_index: int):
+    """Clear the bit in ``value`` at the position ``bit_index``."""
+    return value & ~(1 << bit_index)
+
+
+@njit
+def get_bit(value: int, bit_index: int):
+    """Get the bit in ``value`` at the position ``bit_index``."""
+    return (value & (1 << bit_index)) >> bit_index
+
+
+@njit
+def get_bit_list(value: int, num_bits: int):
+    """Return a list with the binary digits of a number.
+
+    The returned list has ``num_bits`` elements. All of the list's elements
+    whose position is larger than the most significant bit position
+    are filled with zeros. The list is returned in reverse order.
+    """
+    bit_list = []
+    for idx in range(num_bits):
+        bit_at_idx = (value >> idx) & 1
+        bit_list.append(bit_at_idx)
+    return bit_list[::-1]
+
+
+@njit
+def spin_projections(number: int, num_neighbors: int):
+    """Find the spin projections associated with a given integer."""
+    bit_list = get_bit_list(number, num_neighbors)
+    return [-2 * bit_value + 1 for bit_value in bit_list]
+
+
+class ProjectionSet(t.NamedTuple):
+    """Represent a set of spin projections."""
+
+    # The integer associated with the projections.
+    number: int
+
+    # A list with the spin projections.
+    value: t.List
+
+
+@njit
+def compatible_projections(num_neighbors: int):
+    """Find the compatible projections that form the transfer matrix."""
+    num_projections = 2 ** num_neighbors
+    for ref_proj_index in range(num_projections):
+        # This is the reference projections set.
+        ref_proj = spin_projections(ref_proj_index, num_neighbors)
+        ref_proj_set = ProjectionSet(ref_proj_index, ref_proj)
+
+        # The first compatible projection index is obtained by clearing the
+        # leftmost bit from the reference index, and shifting the result one
+        # position to the left.
+        compat_proj_a_index = clear_bit(ref_proj_index, num_neighbors - 1) << 1
+        proj_set_a = spin_projections(compat_proj_a_index, num_neighbors)
+        # Yield the first pair.
+        yield ref_proj_set, ProjectionSet(compat_proj_a_index, proj_set_a)
+
+        # The second compatible projection index is obtained by summing one
+        # to the first compatible projection.
+        compat_proj_b_index = compat_proj_a_index + 1
+        proj_set_b = spin_projections(compat_proj_b_index, num_neighbors)
+        # Yield the second pair.
+        yield ref_proj_set, ProjectionSet(compat_proj_b_index, proj_set_b)
+
+
 @dataclass
 class EnergyData:
     """"""
@@ -120,6 +196,45 @@ def _csr_log_transfer_matrix_parts(
     return nnz_elems, nnz_rows, nnz_cols
 
 
+@njit(cache=True)
+def _csr_log_transfer_matrix_parts_fast(
+    temp: float, mag_field: float, interactions: np.ndarray, num_neighbors: int
+):
+    """Calculate the parts of the sparse transfer matrix.
+
+    We use numba to accelerate the calculations.
+    """
+    # Use lists, since we do not know a priori how many nonzero elements
+    # the transfer matrix has.
+    _nnz_elems = []
+    _nnz_rows = []
+    _nnz_cols = []
+
+    for proj_sets_pair in compatible_projections(num_neighbors):
+        ref_set, compat_set = proj_sets_pair
+        idx = ref_set.number
+        jdx = compat_set.number
+
+        ref_projections = ref_set.value
+        compat_projections = compat_set.value
+
+        proj_one = ref_projections[0]
+        w_elem = mag_field * proj_one / temp
+        for edx in range(num_neighbors):
+            hop_param = interactions[edx]
+            proj_two = compat_projections[edx]
+            w_elem += hop_param * proj_one * proj_two / temp
+
+        _nnz_elems.append(w_elem)
+        _nnz_rows.append(idx)
+        _nnz_cols.append(jdx)
+
+    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
+    nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
+    nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
+    return nnz_elems, nnz_rows, nnz_cols
+
+
 def norm_sparse_log_transfer_matrix(
     temp: float,
     mag_field: float,
@@ -135,6 +250,25 @@ def norm_sparse_log_transfer_matrix(
     # Normalize matrix elements.
     max_w_log_elem = np.max(nnz_elems)
     nnz_elems -= max_w_log_elem
+    w_shape = (num_rows, num_rows)
+    return csr_matrix((nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape)
+
+
+def norm_sparse_log_transfer_matrix_fast(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    num_neighbors: int,
+):
+    """Calculate the (sparse) normalized transfer matrix."""
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions, num_neighbors
+    )
+
+    # Normalize matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     return csr_matrix((nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape)
 
@@ -176,6 +310,36 @@ def energy_thermo_limit(
     nnz_elems -= max_w_log_elem
     norm_nnz_elems = np.exp(nnz_elems)
     # Construct the sparse matrix.
+    w_shape = (num_rows, num_rows)
+    w_matrix = csr_matrix(
+        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    # Evaluate the largest eigenvalue, since it defines the free energy in
+    # the thermodynamic limit.
+    # noinspection PyTypeChecker
+    w_norm_eigvals, _ = sparse_eigs(w_matrix, k=1, which="LM")
+    max_eigvals = w_norm_eigvals.real[0]
+    helm_free_erg_tl = -temp * (log(max_eigvals) + max_w_log_elem)
+    return helm_free_erg_tl
+
+
+def energy_thermo_limit_fast(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    num_neighbors: int,
+):
+    """Calculate the Helmholtz free energy of the system."""
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    norm_nnz_elems = np.exp(nnz_elems)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix = csr_matrix(
         (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
