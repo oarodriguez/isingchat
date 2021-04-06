@@ -60,42 +60,26 @@ def get_bit_list(value: int, num_bits: int):
 def spin_projections(number: int, num_neighbors: int):
     """Find the spin projections associated with a given integer."""
     bit_list = get_bit_list(number, num_neighbors)
-    return [-2 * bit_value + 1 for bit_value in bit_list]
-
-
-class ProjectionSet(t.NamedTuple):
-    """Represent a set of spin projections."""
-
-    # The integer associated with the projections.
-    number: int
-
-    # A list with the spin projections.
-    value: t.List
+    return np.array([-2 * bit_value + 1 for bit_value in bit_list])
 
 
 @njit
 def compatible_projections(num_neighbors: int):
     """Find the compatible projections that form the transfer matrix."""
     num_projections = 2 ** num_neighbors
-    for ref_proj_index in range(num_projections):
-        # This is the reference projections set.
-        ref_proj = spin_projections(ref_proj_index, num_neighbors)
-        ref_proj_set = ProjectionSet(ref_proj_index, ref_proj)
-
+    for ref_index in range(num_projections):
         # The first compatible projection index is obtained by clearing the
         # leftmost bit from the reference index, and shifting the result one
         # position to the left.
-        compat_proj_a_index = clear_bit(ref_proj_index, num_neighbors - 1) << 1
-        proj_set_a = spin_projections(compat_proj_a_index, num_neighbors)
+        proj_a_index = clear_bit(ref_index, num_neighbors - 1) << 1
         # Yield the first pair.
-        yield ref_proj_set, ProjectionSet(compat_proj_a_index, proj_set_a)
+        yield ref_index, proj_a_index
 
         # The second compatible projection index is obtained by summing one
         # to the first compatible projection.
-        compat_proj_b_index = compat_proj_a_index + 1
-        proj_set_b = spin_projections(compat_proj_b_index, num_neighbors)
+        proj_b_index = proj_a_index + 1
         # Yield the second pair.
-        yield ref_proj_set, ProjectionSet(compat_proj_b_index, proj_set_b)
+        yield ref_index, proj_b_index
 
 
 @dataclass
@@ -210,24 +194,23 @@ def _csr_log_transfer_matrix_parts_fast(
     _nnz_rows = []
     _nnz_cols = []
 
+    # NOTE: Watch out with memory leaks with generators that yield
+    #  numpy arrays or more complex data types.
     for proj_sets_pair in compatible_projections(num_neighbors):
-        ref_set, compat_set = proj_sets_pair
-        idx = ref_set.number
-        jdx = compat_set.number
+        ref_index, compat_index = proj_sets_pair
+        ref_proj = spin_projections(ref_index, num_neighbors)
+        compat_proj = spin_projections(compat_index, num_neighbors)
 
-        ref_projections = ref_set.value
-        compat_projections = compat_set.value
-
-        proj_one = ref_projections[0]
+        proj_one = ref_proj[0]
         w_elem = mag_field * proj_one / temp
         for edx in range(num_neighbors):
             hop_param = interactions[edx]
-            proj_two = compat_projections[edx]
+            proj_two = compat_proj[edx]
             w_elem += hop_param * proj_one * proj_two / temp
 
         _nnz_elems.append(w_elem)
-        _nnz_rows.append(idx)
-        _nnz_cols.append(jdx)
+        _nnz_rows.append(ref_index)
+        _nnz_cols.append(compat_index)
 
     nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
     nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)

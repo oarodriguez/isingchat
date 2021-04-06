@@ -9,6 +9,7 @@ from isingchat.ising import (
     make_spin_proj_table,
     norm_sparse_log_transfer_matrix,
     norm_sparse_log_transfer_matrix_fast,
+    spin_projections,
 )
 
 
@@ -37,9 +38,10 @@ def test_gen_projections():
     num_rows = 2 ** num_neighbors
     ref_proj_gen = islice(compat_projections, 0, 2 * num_rows, 2)
     for idx, proj_set_pair in enumerate(ref_proj_gen):
-        ref_set, _ = proj_set_pair
+        ref_idx, _ = proj_set_pair
+        ref_proj = spin_projections(ref_idx, num_neighbors)
         proj_idx = proj_table[idx]
-        assert np.all(ref_set.value == proj_idx)
+        assert np.all(ref_proj == proj_idx)
 
 
 def test_csr_log_transfer_matrix_fast():
