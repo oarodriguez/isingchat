@@ -37,6 +37,7 @@ flake8 = "^3.9.0"
 mypy = "^0.812"
 pydocstyle = "^6.0.0"
 isort = "^5.8.0"
+jupyterlab-code-formatter = "^1.4.10"
 
 [tool.poetry.scripts]
 isingchat = "isingchat.cli:main"
