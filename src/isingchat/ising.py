@@ -256,6 +256,52 @@ def norm_sparse_log_transfer_matrix_fast(
     return csr_matrix((nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape)
 
 
+def energy_finite_chain_fast(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    num_neighbors: int,
+):
+    """Calculate the Helmholtz free energy for a finite chain."""
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    norm_nnz_elems = np.exp(nnz_elems)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix = csr_matrix(
+        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    # Strictly, we should calculate all the eigenvalues and calculate the
+    # Free energy according to F. A, Kassan-ogly (2001),
+    #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
+    # However, in practice, the contribution of the second largest and
+    # subsequent eigenvalues to the partition function decreases fast, so it
+    # is sufficient to calculate only a few of the largest eigenvalues.
+    # TODO: add an option to select the number of eigenvalues to calculate.
+    num_eigvals = min(2 * num_neighbors, num_rows - 2)
+    # noinspection PyTypeChecker
+    w_norm_eigvals: np.ndarray = sparse_eigs(
+        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
+    )
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals.real)
+    max_eigval_norm_idx = eigvals_norms.argmax()
+    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
+    reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    reduced_eigvals_contrib = np.sum(reduced_eigvals ** num_neighbors)
+    helm_free_erg = -temp * (
+        max_w_log_elem
+        + np.log(max_eigval_norm)
+        + np.log(reduced_eigvals_contrib.real)
+    )
+    return helm_free_erg
+
+
 def energy_thermo_limit_dense(
     temp: float,
     mag_field: float,
@@ -327,19 +373,44 @@ def energy_thermo_limit_fast(
     w_matrix = csr_matrix(
         (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
     )
-    # Evaluate the largest eigenvalue, since it defines the free energy in
-    # the thermodynamic limit.
+    # Evaluate the largest eigenvalue only.
+    num_eigvals = 1
+    w_norm_eigvals: np.ndarray
     # noinspection PyTypeChecker
-    w_norm_eigvals, _ = sparse_eigs(w_matrix, k=1, which="LM")
-    max_eigvals = w_norm_eigvals.real[0]
-    helm_free_erg_tl = -temp * (log(max_eigvals) + max_w_log_elem)
+    w_norm_eigvals, _ = sparse_eigs(
+        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=True
+    )
+    # max_eigvals = w_norm_eigvals.real[0]
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
+    max_eigval_norm_idx = eigvals_norms.argmax()
+    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
+    # reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    # In the thermodynamic limit, the number of spins is infinity.
+    # Accordingly, only the largest reduced eigenvalue contributes.
+    reduced_eigvals_contrib = 1.0
+    helm_free_erg_tl = -temp * (
+        max_w_log_elem
+        + log(max_eigval_norm)
+        + np.log(reduced_eigvals_contrib.real)
+    )
     return helm_free_erg_tl
 
 
-def grid_func_base(params: t.Tuple[float, float], interactions: np.ndarray):
+def grid_func_base(
+    params: t.Tuple[float, float],
+    interactions: np.ndarray,
+    finite_chain: False,
+):
     """"""
     temperature, magnetic_field = params
     num_neighbors = len(interactions)
+    if finite_chain:
+        return energy_finite_chain_fast(
+            temperature,
+            magnetic_field,
+            interactions=interactions,
+            num_neighbors=num_neighbors,
+        )
     return energy_thermo_limit_fast(
         temperature,
         magnetic_field,
@@ -349,10 +420,15 @@ def grid_func_base(params: t.Tuple[float, float], interactions: np.ndarray):
 
 
 def eval_energy(
-    params_grid: ParamsGrid, interactions: np.ndarray, num_workers: int = None
+    params_grid: ParamsGrid,
+    interactions: np.ndarray,
+    finite_chain: bool = False,
+    num_workers: int = None,
 ):
     """"""
-    grid_func = partial(grid_func_base, interactions=interactions)
+    grid_func = partial(
+        grid_func_base, interactions=interactions, finite_chain=finite_chain
+    )
     # Evaluate the grid using a multidimensional iterator. This
     # way we do not allocate memory for all the combinations of
     # parameter values that form the grid.
