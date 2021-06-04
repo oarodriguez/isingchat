@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "isingchat"
-version = "0.4.0"
+version = "0.6.0.dev0"
 description = "A library to calculate the thermodynamic properties of a 1D Ising spin chain with beyond nearest-neighbor interactions."
 authors = ["Omar Abel Rodríguez-López <oarodriguez.mx@gmail.com>"]
 
@@ -38,12 +38,17 @@ mypy = "^0.812"
 pydocstyle = "^6.0.0"
 isort = "^5.8.0"
 jupyterlab-code-formatter = "^1.4.10"
+Sphinx = "^4.0.2"
+sphinx-rtd-theme = "^0.5.2"
+coverage = "^5.5"
+pytest-cov = "^2.12.1"
 
 [tool.poetry.scripts]
 isingchat = "isingchat.cli:main"
 
 [tool.black]
 line-length = 79
+target-version = ["py37", "py38"]
 
 [tool.isort]
 multi_line_output = 3
@@ -52,6 +57,24 @@ force_grid_wrap = 0
 use_parentheses = true
 line_length = 79
 profile = "black"
+
+[tool.coverage.paths]
+source = ["src"]
+
+[tool.coverage.run]
+parallel = true
+branch = true
+source = ["isingchat"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

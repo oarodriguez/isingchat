@@ -66,6 +66,7 @@ def run(config_path: str, force: bool):
     temperature = system_data["temperature"]
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
+    finite_chain = system_data["finite"]
     exec_config = config_data["exec"]
     exec_parallel = exec_config["parallel"]
     num_workers = exec_config.get("num_workers")
@@ -110,7 +111,11 @@ def run(config_path: str, force: bool):
         )
         with progress_bar:
             energy_data = []
-            grid_func = partial(grid_func_base, interactions=interactions)
+            grid_func = partial(
+                grid_func_base,
+                interactions=interactions,
+                finite_chain=finite_chain,
+            )
             grid_map = map(grid_func, params_grid)
             for energy_value in grid_map:
                 energy_data.append(energy_value)
@@ -119,7 +124,10 @@ def run(config_path: str, force: bool):
     else:
         with DaskProgressBar():
             energy_data = eval_energy(
-                params_grid, interactions, num_workers=num_workers
+                params_grid,
+                interactions,
+                finite_chain=finite_chain,
+                num_workers=num_workers,
             )
 
     grid_shape = params_grid.shape

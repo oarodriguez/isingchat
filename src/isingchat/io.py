@@ -45,6 +45,7 @@ def read_param(
 def read_ising_config(config_data: dict):
     """Read a config file suitable for modeling the 1D-Ising model."""
     system_info = config_data["system"]
+    finite_system = system_info.get("finite", False)
     hamiltonian_params = system_info["params"]
     # Read the hopping terms.
     interactions_config = hamiltonian_params["interactions"]
@@ -66,6 +67,7 @@ def read_ising_config(config_data: dict):
             "interactions": interactions,
             "temperature": temperature,
             "magnetic_field": magnetic_field,
+            "finite": finite_system,
         },
         "exec": exec_config,
         "metadata": metadata,
