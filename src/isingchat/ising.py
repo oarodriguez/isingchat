@@ -336,6 +336,37 @@ def energy_thermo_limit_fast(
     return helm_free_erg_tl
 
 
+def free_energy_fast(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    num_neighbors: int,
+):
+    """Calculate the Helmholtz free energy of the system."""
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    norm_nnz_elems = np.exp(nnz_elems)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix = csr_matrix(
+        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    # Evaluate the largest eigenvalue, since it defines the free energy in
+    # the thermodynamic limit.
+    # noinspection PyTypeChecker
+    w_norm_eigvals, _ = sparse_eigs(w_matrix, k=1, which="LM")
+    max_eigvals = w_norm_eigvals.real[0]
+    print(w_norm_eigvals)
+    helm_free_erg_tl = -temp * (log(max_eigvals) + max_w_log_elem)
+    return helm_free_erg_tl
+
+
 def grid_func_base(params: t.Tuple[float, float], interactions: np.ndarray):
     """"""
     temperature, magnetic_field = params
