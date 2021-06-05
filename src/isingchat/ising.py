@@ -262,7 +262,7 @@ def energy_finite_chain_fast(
     helm_free_erg = -temp * (
         max_w_log_elem
         + np.log(max_eigval_norm)
-        + np.log(reduced_eigvals_contrib.real)
+        + np.log(reduced_eigvals_contrib.real) / num_neighbors
     )
     return helm_free_erg
 
