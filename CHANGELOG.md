@@ -1,26 +1,22 @@
 # Changelog
 
-## 0.6.0 (Unreleased)
+## 0.6.0 (2021-06-04)
 
 ### Added
 
-TODO.
+- The configuration file now accepts the parameter `num_tm_eigvals` to 
+  indicate how many transfer-matrix-eigenvalues to use for estimating the 
+  free energy. This may be useful for long chains, where it is impossible 
+  or terribly slow to calculate all the eigenvalues of the transfer matrix.
 
 ### Changed
 
-TODO.
-
-### Deprecated
-
-TODO.
-
-### Removed
-
-TODO.
+- We moved several utility functions from the `ising` module to the `utils` 
+  module. Also, we fixed the tests for the `utils` module.
 
 ### Fixed
 
-TODO.
+- We corrected the contribution of all eigenvalues to the partition function.
 
 ## 0.5.0 (2021-06-03)
 
