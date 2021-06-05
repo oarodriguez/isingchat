@@ -223,6 +223,7 @@ def energy_finite_chain_fast(
     mag_field: float,
     interactions: np.ndarray,
     num_neighbors: int,
+    num_tm_eigvals: int = None,
 ):
     """Calculate the Helmholtz free energy for a finite chain."""
     nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
@@ -245,8 +246,10 @@ def energy_finite_chain_fast(
     # However, in practice, the contribution of the second largest and
     # subsequent eigenvalues to the partition function decreases fast, so it
     # is sufficient to calculate only a few of the largest eigenvalues.
-    # TODO: add an option to select the number of eigenvalues to calculate.
-    num_eigvals = min(2 * num_neighbors, num_rows - 2)
+    if num_tm_eigvals is None:
+        num_eigvals = min(num_neighbors ** 2, num_rows - 2)
+    else:
+        num_eigvals = min(num_tm_eigvals, num_rows - 2)
     # noinspection PyTypeChecker
     w_norm_eigvals: np.ndarray = sparse_eigs(
         w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
@@ -362,6 +365,7 @@ def grid_func_base(
     params: t.Tuple[float, float],
     interactions: np.ndarray,
     finite_chain: False,
+    num_tm_eigvals: int = None,
 ):
     """"""
     temperature, magnetic_field = params
@@ -372,6 +376,7 @@ def grid_func_base(
             magnetic_field,
             interactions=interactions,
             num_neighbors=num_neighbors,
+            num_tm_eigvals=num_tm_eigvals,
         )
     return energy_thermo_limit_fast(
         temperature,
@@ -385,11 +390,15 @@ def eval_energy(
     params_grid: ParamsGrid,
     interactions: np.ndarray,
     finite_chain: bool = False,
+    num_tm_eigvals: int = None,
     num_workers: int = None,
 ):
     """"""
     grid_func = partial(
-        grid_func_base, interactions=interactions, finite_chain=finite_chain
+        grid_func_base,
+        interactions=interactions,
+        finite_chain=finite_chain,
+        num_tm_eigvals=num_tm_eigvals,
     )
     # Evaluate the grid using a multidimensional iterator. This
     # way we do not allocate memory for all the combinations of
