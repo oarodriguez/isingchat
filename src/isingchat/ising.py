@@ -284,7 +284,7 @@ def energy_finite_chain_fast(
     # subsequent eigenvalues to the partition function decreases fast, so it
     # is sufficient to calculate only a few of the largest eigenvalues.
     # TODO: add an option to select the number of eigenvalues to calculate.
-    num_eigvals = min(2 * num_neighbors, num_rows - 2)
+    num_eigvals = min(num_neighbors**2, num_rows - 2)
     # noinspection PyTypeChecker
     w_norm_eigvals: np.ndarray = sparse_eigs(
         w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
@@ -293,11 +293,11 @@ def energy_finite_chain_fast(
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
-    reduced_eigvals_contrib = np.sum(reduced_eigvals ** num_neighbors)
+    reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
     helm_free_erg = -temp * (
         max_w_log_elem
         + np.log(max_eigval_norm)
-        + np.log(reduced_eigvals_contrib.real)
+        + np.log(reduced_eigvals_contrib.real)/(num_neighbors)
     )
     return helm_free_erg
 
