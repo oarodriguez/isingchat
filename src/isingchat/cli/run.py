@@ -67,6 +67,7 @@ def run(config_path: str, force: bool):
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
     finite_chain = system_data["finite"]
+    num_tm_eigvals = system_data["num_tm_eigvals"]
     exec_config = config_data["exec"]
     exec_parallel = exec_config["parallel"]
     num_workers = exec_config.get("num_workers")
@@ -115,6 +116,7 @@ def run(config_path: str, force: bool):
                 grid_func_base,
                 interactions=interactions,
                 finite_chain=finite_chain,
+                num_tm_eigvals=num_tm_eigvals,
             )
             grid_map = map(grid_func, params_grid)
             for energy_value in grid_map:
@@ -127,6 +129,7 @@ def run(config_path: str, force: bool):
                 params_grid,
                 interactions,
                 finite_chain=finite_chain,
+                num_tm_eigvals=num_tm_eigvals,
                 num_workers=num_workers,
             )
 

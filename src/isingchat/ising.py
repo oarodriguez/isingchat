@@ -10,7 +10,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
 
 from .exec_ import ParamsGrid
-from .utils import bin_digits
+from .utils import bin_digits, clear_bit, spin_projections
 
 
 def make_spin_proj_table(num_neighbors: int):
@@ -23,44 +23,6 @@ def make_spin_proj_table(num_neighbors: int):
 
 
 # See https://realpython.com/python-bitwise-operators/#bitmasks.
-@njit
-def set_bit(value: int, bit_index: int):
-    """Set the bit in ``value`` at the position ``bit_index``."""
-    return value | (1 << bit_index)
-
-
-@njit
-def clear_bit(value: int, bit_index: int):
-    """Clear the bit in ``value`` at the position ``bit_index``."""
-    return value & ~(1 << bit_index)
-
-
-@njit
-def get_bit(value: int, bit_index: int):
-    """Get the bit in ``value`` at the position ``bit_index``."""
-    return (value & (1 << bit_index)) >> bit_index
-
-
-@njit
-def get_bit_list(value: int, num_bits: int):
-    """Return a list with the binary digits of a number.
-
-    The returned list has ``num_bits`` elements. All of the list's elements
-    whose position is larger than the most significant bit position
-    are filled with zeros. The list is returned in reverse order.
-    """
-    bit_list = []
-    for idx in range(num_bits):
-        bit_at_idx = (value >> idx) & 1
-        bit_list.append(bit_at_idx)
-    return bit_list[::-1]
-
-
-@njit
-def spin_projections(number: int, num_neighbors: int):
-    """Find the spin projections associated with a given integer."""
-    bit_list = get_bit_list(number, num_neighbors)
-    return np.array([-2 * bit_value + 1 for bit_value in bit_list])
 
 
 @njit
@@ -261,6 +223,7 @@ def energy_finite_chain_fast(
     mag_field: float,
     interactions: np.ndarray,
     num_neighbors: int,
+    num_tm_eigvals: int = None,
 ):
     """Calculate the Helmholtz free energy for a finite chain."""
     nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
@@ -283,8 +246,15 @@ def energy_finite_chain_fast(
     # However, in practice, the contribution of the second largest and
     # subsequent eigenvalues to the partition function decreases fast, so it
     # is sufficient to calculate only a few of the largest eigenvalues.
+<<<<<<< HEAD
     # TODO: add an option to select the number of eigenvalues to calculate.
     num_eigvals = min(num_neighbors**2, num_rows - 2)
+=======
+    if num_tm_eigvals is None:
+        num_eigvals = min(num_neighbors ** 2, num_rows - 2)
+    else:
+        num_eigvals = min(num_tm_eigvals, num_rows - 2)
+>>>>>>> 4b9923119de7fce161b0c3eca89be915e2550e49
     # noinspection PyTypeChecker
     w_norm_eigvals: np.ndarray = sparse_eigs(
         w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
@@ -297,7 +267,11 @@ def energy_finite_chain_fast(
     helm_free_erg = -temp * (
         max_w_log_elem
         + np.log(max_eigval_norm)
+<<<<<<< HEAD
         + np.log(reduced_eigvals_contrib.real)/(num_neighbors)
+=======
+        + np.log(reduced_eigvals_contrib.real) / num_neighbors
+>>>>>>> 4b9923119de7fce161b0c3eca89be915e2550e49
     )
     return helm_free_erg
 
@@ -431,6 +405,7 @@ def grid_func_base(
     params: t.Tuple[float, float],
     interactions: np.ndarray,
     finite_chain: False,
+    num_tm_eigvals: int = None,
 ):
     """"""
     temperature, magnetic_field = params
@@ -441,6 +416,7 @@ def grid_func_base(
             magnetic_field,
             interactions=interactions,
             num_neighbors=num_neighbors,
+            num_tm_eigvals=num_tm_eigvals,
         )
     return energy_thermo_limit_fast(
         temperature,
@@ -454,11 +430,15 @@ def eval_energy(
     params_grid: ParamsGrid,
     interactions: np.ndarray,
     finite_chain: bool = False,
+    num_tm_eigvals: int = None,
     num_workers: int = None,
 ):
     """"""
     grid_func = partial(
-        grid_func_base, interactions=interactions, finite_chain=finite_chain
+        grid_func_base,
+        interactions=interactions,
+        finite_chain=finite_chain,
+        num_tm_eigvals=num_tm_eigvals,
     )
     # Evaluate the grid using a multidimensional iterator. This
     # way we do not allocate memory for all the combinations of

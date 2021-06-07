@@ -1,6 +1,7 @@
 from itertools import islice
 
 import numpy as np
+
 from isingchat.ising import (
     compatible_projections,
     energy_thermo_limit,
@@ -9,8 +10,8 @@ from isingchat.ising import (
     make_spin_proj_table,
     norm_sparse_log_transfer_matrix,
     norm_sparse_log_transfer_matrix_fast,
-    spin_projections,
 )
+from isingchat.utils import spin_projections
 
 
 def test_energy_data():
