@@ -254,7 +254,7 @@ def energy_finite_chain_fast(
     w_norm_eigvals: np.ndarray = sparse_eigs(
         w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
     )
-    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals.real)
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
