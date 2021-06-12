@@ -66,6 +66,7 @@ def run(config_path: str, force: bool):
     temperature = system_data["temperature"]
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
+    interactions_2 = system_data["interactions_2"]
     finite_chain = system_data["finite"]
     num_tm_eigvals = system_data["num_tm_eigvals"]
     exec_config = config_data["exec"]
@@ -115,6 +116,7 @@ def run(config_path: str, force: bool):
             grid_func = partial(
                 grid_func_base,
                 interactions=interactions,
+                interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
             )
@@ -127,7 +129,8 @@ def run(config_path: str, force: bool):
         with DaskProgressBar():
             energy_data = eval_energy(
                 params_grid,
-                interactions,
+                interactions=interactions,
+                interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
                 num_workers=num_workers,

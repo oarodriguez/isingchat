@@ -8,6 +8,7 @@ from dask import bag
 from numba import njit
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
+import scipy
 
 from .exec_ import ParamsGrid
 from .utils import bin_digits, clear_bit, spin_projections
@@ -246,32 +247,143 @@ def energy_finite_chain_fast(
     # However, in practice, the contribution of the second largest and
     # subsequent eigenvalues to the partition function decreases fast, so it
     # is sufficient to calculate only a few of the largest eigenvalues.
-<<<<<<< HEAD
-    # TODO: add an option to select the number of eigenvalues to calculate.
-    num_eigvals = min(num_neighbors**2, num_rows - 2)
-=======
     if num_tm_eigvals is None:
         num_eigvals = min(num_neighbors ** 2, num_rows - 2)
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
->>>>>>> 4b9923119de7fce161b0c3eca89be915e2550e49
-    # noinspection PyTypeChecker
-    w_norm_eigvals: np.ndarray = sparse_eigs(
-        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
-    )
-    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals.real)
+    # for three or two interactions
+    if len(interactions) <= 3:
+        w_matrix_dense = w_matrix.todense()
+        w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
+            w_matrix_dense
+        )
+        w_norm_eigvals = w_all_norm_eigvals[0]
+    else:
+        w_norm_eigvals: np.ndarray = sparse_eigs(
+            w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
+        )
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    # # --DELETE
+    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
+    # real_eigs.sort()
+    # print('real part sparse eigenval')
+    # print(real_eigs)
+    # # --all eigenvalue
+    # w_matrix_dense = w_matrix.todense()
+    # w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
+    #     w_matrix_dense
+    # )
+    # eigvals_norms: np.ndarray = np.abs(w_all_norm_eigvals[0])
+    # max_eigval_norm_idx = eigvals_norms.argmax()
+    # max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
+    # reduced_eigvals = w_all_norm_eigvals[0] / max_eigval_norm
+    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
+    # real_eigs.sort()
+    # print('all eigenvalues')
+    # print(real_eigs)
+    # # --DELETE
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
+
     helm_free_erg = -temp * (
         max_w_log_elem
         + np.log(max_eigval_norm)
-<<<<<<< HEAD
-        + np.log(reduced_eigvals_contrib.real)/(num_neighbors)
-=======
         + np.log(reduced_eigvals_contrib.real) / num_neighbors
->>>>>>> 4b9923119de7fce161b0c3eca89be915e2550e49
+    )
+    return helm_free_erg
+
+def energy_imperfect_chain_fast(
+    temp: float,
+    mag_field: float,
+    interactions_1: np.ndarray,
+    interactions_2: np.ndarray,
+    num_neighbors: int,
+    num_tm_eigvals: int = None,
+):
+    """Calculate the Helmholtz free energy for a chain with two imperfections."""
+    # First matrix
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions_1, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    norm_nnz_elems = np.exp(nnz_elems)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix_1 = csr_matrix(
+        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    # Second matrix
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions_2, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    norm_nnz_elems = np.exp(nnz_elems)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix_2 = csr_matrix(
+        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    w_matrix = scipy.sparse.csr_matrix(w_matrix_1).multiply(w_matrix_2)
+    # Strictly, we should calculate all the eigenvalues and calculate the
+    # Free energy according to F. A, Kassan-ogly (2001),
+    #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
+    # However, in practice, the contribution of the second largest and
+    # subsequent eigenvalues to the partition function decreases fast, so it
+    # is sufficient to calculate only a few of the largest eigenvalues.
+    if num_tm_eigvals is None:
+        num_eigvals = min(num_neighbors ** 2, num_rows - 2)
+    else:
+        num_eigvals = min(num_tm_eigvals, num_rows - 2)
+    # for three or two interactions
+    if len(interactions) <= 3:
+        w_matrix_dense = w_matrix.todense()
+        w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
+            w_matrix_dense
+        )
+        w_norm_eigvals = w_all_norm_eigvals[0]
+    else:
+        w_norm_eigvals: np.ndarray = sparse_eigs(
+            w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
+        )
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
+    max_eigval_norm_idx = eigvals_norms.argmax()
+    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
+    reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    # # --DELETE
+    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
+    # real_eigs.sort()
+    # print('real part sparse eigenval')
+    # print(real_eigs)
+    # # --all eigenvalue
+    # w_matrix_dense = w_matrix.todense()
+    # w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
+    #     w_matrix_dense
+    # )
+    # eigvals_norms: np.ndarray = np.abs(w_all_norm_eigvals[0])
+    # max_eigval_norm_idx = eigvals_norms.argmax()
+    # max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
+    # reduced_eigvals = w_all_norm_eigvals[0] / max_eigval_norm
+    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
+    # real_eigs.sort()
+    # print('all eigenvalues')
+    # print(real_eigs)
+    # # --DELETE
+    reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
+
+    helm_free_erg = -temp * (
+        max_w_log_elem
+        + np.log(max_eigval_norm)
+        + np.log(reduced_eigvals_contrib.real) / num_neighbors
     )
     return helm_free_erg
 
@@ -404,12 +516,22 @@ def free_energy_fast(
 def grid_func_base(
     params: t.Tuple[float, float],
     interactions: np.ndarray,
-    finite_chain: False,
+    interactions_2: np.ndarray = None,
+    finite_chain: bool = False,
     num_tm_eigvals: int = None,
 ):
     """"""
     temperature, magnetic_field = params
     num_neighbors = len(interactions)
+    if interactions_2 is not None:
+        return energy_imperfect_chain_fast(
+            temperature,
+            magnetic_field,
+            interactions_1=interactions,
+            interactions_2=interactions_2,
+            num_neighbors=num_neighbors,
+            num_tm_eigvals=num_tm_eigvals
+        )
     if finite_chain:
         return energy_finite_chain_fast(
             temperature,
@@ -429,6 +551,7 @@ def grid_func_base(
 def eval_energy(
     params_grid: ParamsGrid,
     interactions: np.ndarray,
+    interactions_2: np.ndarray = None,
     finite_chain: bool = False,
     num_tm_eigvals: int = None,
     num_workers: int = None,
@@ -437,6 +560,7 @@ def eval_energy(
     grid_func = partial(
         grid_func_base,
         interactions=interactions,
+        interactions_2=interactions_2,
         finite_chain=finite_chain,
         num_tm_eigvals=num_tm_eigvals,
     )

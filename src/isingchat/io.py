@@ -51,6 +51,12 @@ def read_ising_config(config_data: dict):
     # Read the hopping terms.
     interactions_config = hamiltonian_params["interactions"]
     interactions = read_param(interactions_config)
+    # Read others hopping terms
+    interactions_2_config = hamiltonian_params.get("interactions_2",None)
+    if interactions_2_config is None:
+        interactions_2 = None
+    else:
+        interactions_2 = read_param(interactions_2_config)
     # Read the temperature.
     temp_config = hamiltonian_params["temperature"]
     temperature = read_param(temp_config)
@@ -66,6 +72,7 @@ def read_ising_config(config_data: dict):
     return {
         "system": {
             "interactions": interactions,
+            "interactions_2": interactions_2,
             "temperature": temperature,
             "magnetic_field": magnetic_field,
             "finite": finite_system,
