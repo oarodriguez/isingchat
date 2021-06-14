@@ -601,7 +601,7 @@ def grid_func_base(
                 magnetic_field,
                 interactions=interactions,
                 interactions_2=interactions_2,
-                num_neighbors=num_tm_eigvals
+                num_neighbors=num_neighbors
             )
     if finite_chain:
         return energy_finite_chain_fast(
