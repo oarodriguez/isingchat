@@ -294,6 +294,7 @@ def energy_finite_chain_fast(
     )
     return helm_free_erg
 
+
 def energy_imperfect_chain_fast(
     temp: float,
     mag_field: float,
@@ -482,6 +483,67 @@ def energy_thermo_limit_fast(
     return helm_free_erg_tl
 
 
+def energy_imperfect_thermo_limit_fast(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    interactions_2: np.ndarray,
+    num_neighbors: int,
+):
+    """Calculate the Helmholtz free energy of the system."""
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    norm_nnz_elems = np.exp(nnz_elems)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix_1 = csr_matrix(
+        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    # Second matrix
+    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions_2, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem
+    norm_nnz_elems = np.exp(nnz_elems)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix_2 = csr_matrix(
+        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    w_matrix = scipy.sparse.csr_matrix(w_matrix_1).multiply(w_matrix_2)
+    # Evaluate the largest eigenvalue only.
+    num_eigvals = 1
+    w_norm_eigvals: np.ndarray
+    # noinspection PyTypeChecker
+    w_norm_eigvals, _ = sparse_eigs(
+        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=True
+    )
+    # max_eigvals = w_norm_eigvals.real[0]
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
+    max_eigval_norm_idx = eigvals_norms.argmax()
+    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
+    # reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    # In the thermodynamic limit, the number of spins is infinity.
+    # Accordingly, only the largest reduced eigenvalue contributes.
+    reduced_eigvals_contrib = 1.0
+    helm_free_erg_tl = -temp * (
+        max_w_log_elem
+        + log(max_eigval_norm)
+        + np.log(reduced_eigvals_contrib.real)
+    )
+    return helm_free_erg_tl
+
+
 def free_energy_fast(
     temp: float,
     mag_field: float,
@@ -524,14 +586,23 @@ def grid_func_base(
     temperature, magnetic_field = params
     num_neighbors = len(interactions)
     if interactions_2 is not None:
-        return energy_imperfect_chain_fast(
-            temperature,
-            magnetic_field,
-            interactions_1=interactions,
-            interactions_2=interactions_2,
-            num_neighbors=num_neighbors,
-            num_tm_eigvals=num_tm_eigvals
-        )
+        if finite_chain:
+            return energy_imperfect_chain_fast(
+                temperature,
+                magnetic_field,
+                interactions_1=interactions,
+                interactions_2=interactions_2,
+                num_neighbors=num_neighbors,
+                num_tm_eigvals=num_tm_eigvals
+            )
+        else:
+            return energy_imperfect_thermo_limit_fast(
+                temperature,
+                magnetic_field,
+                interactions=interactions,
+                interactions_2=interactions_2,
+                num_neighbors=num_tm_eigvals
+            )
     if finite_chain:
         return energy_finite_chain_fast(
             temperature,
