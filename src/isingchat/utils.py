@@ -51,3 +51,12 @@ def spin_projections(number: int, num_neighbors: int):
     """Find the spin projections associated with a given integer."""
     bit_list = get_bit_list(number, num_neighbors)
     return np.array([-2 * bit_value + 1 for bit_value in bit_list])
+
+
+def convert_bin_to_decimal(bin_digits: list):
+    """Convert a list of binary digits ``value`` to decimal int."""
+    value = 0
+    long_bin = len(bin_digits)-1
+    for i,bin in enumerate(bin_digits):
+        value += bin*2**(long_bin-i)
+    return value

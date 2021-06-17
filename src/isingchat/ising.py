@@ -4,15 +4,14 @@ from functools import partial
 from math import log
 
 import numpy as np
+import scipy
 from dask import bag
 from numba import njit
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
-import scipy
 
 from .exec_ import ParamsGrid
-from .utils import bin_digits, clear_bit, spin_projections
-
+from .utils import bin_digits, clear_bit, spin_projections, convert_bin_to_decimal
 
 def make_spin_proj_table(num_neighbors: int):
     """Creates the table of spin projections."""
@@ -181,6 +180,41 @@ def _csr_log_transfer_matrix_parts_fast(
     return nnz_elems, nnz_rows, nnz_cols
 
 
+def _csr_finite_log_transfer_matrix_parts_fast(
+    temp: float, mag_field: float, interactions: np.ndarray, num_neighbors: int
+):
+    """Calculate the parts of the sparse transfer matrix.
+
+    We use numba to accelerate the calculations.
+    """
+    _nnz_elems = []
+    _nnz_rows = list(range(num_neighbors**2))
+    _nnz_cols = []
+    for row in _nnz_rows:
+        aux_bin = bin_digits(row, num_neighbors)
+        first_element = aux_bin.pop(0)
+        aux_bin.append(first_element)
+        col = convert_bin_to_decimal(aux_bin)
+        _nnz_cols.append(col)
+
+        ref_proj = spin_projections(row, num_neighbors)
+        proj_one = ref_proj[0]
+        w_elem = mag_field * proj_one / temp
+        for index in range(len(ref_proj)):
+            hop_param = interactions[index]
+            if index < len(ref_proj)-1:
+                proj_two = ref_proj[index+1]
+            else:
+                proj_two = ref_proj[0]
+            w_elem += hop_param * proj_one * proj_two / temp
+        _nnz_elems.append(w_elem)
+
+    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
+    nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
+    nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
+    return nnz_elems, nnz_rows, nnz_cols
+
+
 def norm_sparse_log_transfer_matrix(
     temp: float,
     mag_field: float,
@@ -227,7 +261,7 @@ def energy_finite_chain_fast(
     num_tm_eigvals: int = None,
 ):
     """Calculate the Helmholtz free energy for a finite chain."""
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elems, nnz_rows, nnz_cols = _csr_finite_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions, num_neighbors
     )
 
@@ -254,9 +288,7 @@ def energy_finite_chain_fast(
     # for three or two interactions
     if len(interactions) <= 3:
         w_matrix_dense = w_matrix.todense()
-        w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
-            w_matrix_dense
-        )
+        w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
         w_norm_eigvals = w_all_norm_eigvals[0]
     else:
         w_norm_eigvals: np.ndarray = sparse_eigs(
@@ -346,11 +378,9 @@ def energy_imperfect_chain_fast(
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
     # for three or two interactions
-    if len(interactions) <= 3:
+    if len(interactions_1) <= 3:
         w_matrix_dense = w_matrix.todense()
-        w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
-            w_matrix_dense
-        )
+        w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
         w_norm_eigvals = w_all_norm_eigvals[0]
     else:
         w_norm_eigvals: np.ndarray = sparse_eigs(
@@ -536,7 +566,8 @@ def energy_imperfect_thermo_limit_fast(
     # In the thermodynamic limit, the number of spins is infinity.
     # Accordingly, only the largest reduced eigenvalue contributes.
     reduced_eigvals_contrib = 1.0
-    helm_free_erg_tl = -temp * (
+    cellunit = 2
+    helm_free_erg_tl = -(temp/cellunit) * (
         max_w_log_elem
         + log(max_eigval_norm)
         + np.log(reduced_eigvals_contrib.real)
@@ -593,7 +624,7 @@ def grid_func_base(
                 interactions_1=interactions,
                 interactions_2=interactions_2,
                 num_neighbors=num_neighbors,
-                num_tm_eigvals=num_tm_eigvals
+                num_tm_eigvals=num_tm_eigvals,
             )
         else:
             return energy_imperfect_thermo_limit_fast(
@@ -601,7 +632,7 @@ def grid_func_base(
                 magnetic_field,
                 interactions=interactions,
                 interactions_2=interactions_2,
-                num_neighbors=num_neighbors
+                num_neighbors=num_neighbors,
             )
     if finite_chain:
         return energy_finite_chain_fast(

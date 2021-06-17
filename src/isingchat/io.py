@@ -52,7 +52,7 @@ def read_ising_config(config_data: dict):
     interactions_config = hamiltonian_params["interactions"]
     interactions = read_param(interactions_config)
     # Read others hopping terms
-    interactions_2_config = hamiltonian_params.get("interactions_2",None)
+    interactions_2_config = hamiltonian_params.get("interactions_2", None)
     if interactions_2_config is None:
         interactions_2 = None
     else:

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.7.0 (Unreleased)
+
+### Added
+
+TODO.
+
+### Changed
+
+TODO.
+
+### Deprecated
+
+TODO.
+
+### Removed
+
+TODO.
+
+### Fixed
+
+TODO.
+
 ## 0.6.0 (2021-06-04)
 
 ### Added
