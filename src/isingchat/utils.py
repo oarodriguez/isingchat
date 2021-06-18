@@ -56,7 +56,7 @@ def spin_projections(number: int, num_neighbors: int):
 def convert_bin_to_decimal(bin_digits: list):
     """Convert a list of binary digits ``value`` to decimal int."""
     value = 0
-    long_bin = len(bin_digits)-1
-    for i,bin in enumerate(bin_digits):
-        value += bin*2**(long_bin-i)
+    long_bin = len(bin_digits) - 1
+    for i, bin in enumerate(bin_digits):
+        value += bin * 2 ** (long_bin - i)
     return value

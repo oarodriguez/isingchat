@@ -11,7 +11,13 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
 
 from .exec_ import ParamsGrid
-from .utils import bin_digits, clear_bit, spin_projections, convert_bin_to_decimal
+from .utils import (
+    bin_digits,
+    clear_bit,
+    convert_bin_to_decimal,
+    spin_projections,
+)
+
 
 def make_spin_proj_table(num_neighbors: int):
     """Creates the table of spin projections."""
@@ -188,7 +194,7 @@ def _csr_finite_log_transfer_matrix_parts_fast(
     We use numba to accelerate the calculations.
     """
     _nnz_elems = []
-    _nnz_rows = list(range(2**num_neighbors))
+    _nnz_rows = list(range(2 ** num_neighbors))
     _nnz_cols = []
     for row in _nnz_rows:
         aux_bin = bin_digits(row, num_neighbors)
@@ -202,8 +208,8 @@ def _csr_finite_log_transfer_matrix_parts_fast(
         w_elem = mag_field * proj_one / temp
         for index in range(len(ref_proj)):
             hop_param = interactions[index]
-            if index < len(ref_proj)-1:
-                proj_two = ref_proj[index+1]
+            if index < len(ref_proj) - 1:
+                proj_two = ref_proj[index + 1]
             else:
                 proj_two = ref_proj[0]
             w_elem += hop_param * proj_one * proj_two / temp
@@ -567,7 +573,7 @@ def energy_imperfect_thermo_limit_fast(
     # Accordingly, only the largest reduced eigenvalue contributes.
     reduced_eigvals_contrib = 1.0
     cellunit = 2
-    helm_free_erg_tl = -(temp/cellunit) * (
+    helm_free_erg_tl = -(temp / cellunit) * (
         max_w_log_elem
         + log(max_eigval_norm)
         + np.log(reduced_eigvals_contrib.real)
