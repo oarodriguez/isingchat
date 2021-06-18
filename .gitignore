@@ -51,6 +51,7 @@ graphs/
 share/
 etc/
 Scripts/
+myscripts/
 pyvenv.cfg
 #
 build/

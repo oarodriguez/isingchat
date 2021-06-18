@@ -188,7 +188,7 @@ def _csr_finite_log_transfer_matrix_parts_fast(
     We use numba to accelerate the calculations.
     """
     _nnz_elems = []
-    _nnz_rows = list(range(num_neighbors**2))
+    _nnz_rows = list(range(2**num_neighbors))
     _nnz_cols = []
     for row in _nnz_rows:
         aux_bin = bin_digits(row, num_neighbors)
