@@ -291,7 +291,7 @@ def energy_finite_chain_fast(
         num_eigvals = min(num_neighbors ** 2, num_rows - 2)
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
-    # for three or two interactions
+    # For three or two interactions we take all eigenvalues
     if len(interactions) <= 3:
         w_matrix_dense = w_matrix.todense()
         w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
@@ -304,25 +304,6 @@ def energy_finite_chain_fast(
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
-    # # --DELETE
-    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
-    # real_eigs.sort()
-    # print('real part sparse eigenval')
-    # print(real_eigs)
-    # # --all eigenvalue
-    # w_matrix_dense = w_matrix.todense()
-    # w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
-    #     w_matrix_dense
-    # )
-    # eigvals_norms: np.ndarray = np.abs(w_all_norm_eigvals[0])
-    # max_eigval_norm_idx = eigvals_norms.argmax()
-    # max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
-    # reduced_eigvals = w_all_norm_eigvals[0] / max_eigval_norm
-    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
-    # real_eigs.sort()
-    # print('all eigenvalues')
-    # print(real_eigs)
-    # # --DELETE
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
 
     helm_free_erg = -temp * (
@@ -332,8 +313,8 @@ def energy_finite_chain_fast(
     )
     return helm_free_erg
 
-
-def energy_imperfect_chain_fast(
+# TODO: check that this function reduce to the regular one
+def energy_imperfect_finite_chain_fast(
     temp: float,
     mag_field: float,
     interactions_1: np.ndarray,
@@ -348,8 +329,8 @@ def energy_imperfect_chain_fast(
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
+    max_w_log_elem_1 = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem_1
     norm_nnz_elems = np.exp(nnz_elems)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
@@ -363,8 +344,8 @@ def energy_imperfect_chain_fast(
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
+    max_w_log_elem_2 = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem_2
     norm_nnz_elems = np.exp(nnz_elems)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
@@ -372,7 +353,7 @@ def energy_imperfect_chain_fast(
     w_matrix_2 = csr_matrix(
         (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
     )
-    w_matrix = scipy.sparse.csr_matrix(w_matrix_1).multiply(w_matrix_2)
+    w_matrix = w_matrix_1*w_matrix_2
     # Strictly, we should calculate all the eigenvalues and calculate the
     # Free energy according to F. A, Kassan-ogly (2001),
     #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
@@ -383,7 +364,7 @@ def energy_imperfect_chain_fast(
         num_eigvals = min(num_neighbors ** 2, num_rows - 2)
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
-    # for three or two interactions
+    # For three or two interactions we take all eigenvalues
     if len(interactions_1) <= 3:
         w_matrix_dense = w_matrix.todense()
         w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
@@ -396,29 +377,10 @@ def energy_imperfect_chain_fast(
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
-    # # --DELETE
-    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
-    # real_eigs.sort()
-    # print('real part sparse eigenval')
-    # print(real_eigs)
-    # # --all eigenvalue
-    # w_matrix_dense = w_matrix.todense()
-    # w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(
-    #     w_matrix_dense
-    # )
-    # eigvals_norms: np.ndarray = np.abs(w_all_norm_eigvals[0])
-    # max_eigval_norm_idx = eigvals_norms.argmax()
-    # max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
-    # reduced_eigvals = w_all_norm_eigvals[0] / max_eigval_norm
-    # real_eigs = [red_eig.real for red_eig in reduced_eigvals]
-    # real_eigs.sort()
-    # print('all eigenvalues')
-    # print(real_eigs)
-    # # --DELETE
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
-
-    helm_free_erg = -temp * (
-        max_w_log_elem
+    cellunit = 2
+    helm_free_erg = -(temp/cellunit) * (
+        max_w_log_elem_1 + max_w_log_elem_2
         + np.log(max_eigval_norm)
         + np.log(reduced_eigvals_contrib.real) / num_neighbors
     )
@@ -532,8 +494,8 @@ def energy_imperfect_thermo_limit_fast(
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
+    max_w_log_elem_1 = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem_1
     norm_nnz_elems = np.exp(nnz_elems)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
@@ -547,8 +509,8 @@ def energy_imperfect_thermo_limit_fast(
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
+    max_w_log_elem_2 = np.max(nnz_elems)
+    nnz_elems -= max_w_log_elem_2
     norm_nnz_elems = np.exp(nnz_elems)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
@@ -556,27 +518,21 @@ def energy_imperfect_thermo_limit_fast(
     w_matrix_2 = csr_matrix(
         (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
     )
-    w_matrix = scipy.sparse.csr_matrix(w_matrix_1).multiply(w_matrix_2)
+    w_matrix = w_matrix_1*w_matrix_2
     # Evaluate the largest eigenvalue only.
     num_eigvals = 1
     w_norm_eigvals: np.ndarray
     # noinspection PyTypeChecker
-    w_norm_eigvals, _ = sparse_eigs(
-        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=True
+    w_norm_eigvals = sparse_eigs(
+        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
     )
-    # max_eigvals = w_norm_eigvals.real[0]
-    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
-    max_eigval_norm_idx = eigvals_norms.argmax()
-    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
-    # reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    max_eigval = w_norm_eigvals.real[0]
     # In the thermodynamic limit, the number of spins is infinity.
     # Accordingly, only the largest reduced eigenvalue contributes.
-    reduced_eigvals_contrib = 1.0
     cellunit = 2
     helm_free_erg_tl = -(temp / cellunit) * (
-        max_w_log_elem
-        + log(max_eigval_norm)
-        + np.log(reduced_eigvals_contrib.real)
+        max_w_log_elem_1 + max_w_log_elem_2
+        + log(max_eigval)
     )
     return helm_free_erg_tl
 
