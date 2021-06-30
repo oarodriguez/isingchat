@@ -292,7 +292,7 @@ def energy_finite_chain_fast(
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
     # For three or two interactions we take all eigenvalues
-    if len(interactions) <= 3:
+    if len(interactions) <= 8:
         w_matrix_dense = w_matrix.todense()
         w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
         w_norm_eigvals = w_all_norm_eigvals[0]
@@ -305,7 +305,8 @@ def energy_finite_chain_fast(
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
-
+    # print('reduced_eigvals: {}'.format(np.log(reduced_eigvals_contrib.real) / num_neighbors))
+    # print("\n")
     helm_free_erg = -temp * (
         max_w_log_elem
         + np.log(max_eigval_norm)
