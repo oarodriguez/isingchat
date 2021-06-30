@@ -292,7 +292,7 @@ def energy_finite_chain_fast(
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
     # For three or two interactions we take all eigenvalues
-    if len(interactions) <= 8:
+    if len(interactions) <= 15:
         w_matrix_dense = w_matrix.todense()
         w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
         w_norm_eigvals = w_all_norm_eigvals[0]
