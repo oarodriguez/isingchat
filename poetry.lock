@@ -236,7 +236,7 @@ six = "*"
 
 [[package]]
 name = "dask"
-version = "2021.5.1"
+version = "2021.8.0"
 description = "Parallel PyData with Task Scheduling"
 category = "main"
 optional = false
@@ -245,16 +245,17 @@ python-versions = ">=3.7"
 [package.dependencies]
 cloudpickle = ">=1.1.1"
 fsspec = ">=0.6.0"
+packaging = ">=20.0"
 partd = ">=0.3.10"
 pyyaml = "*"
 toolz = ">=0.8.2"
 
 [package.extras]
-array = ["numpy (>=1.16)"]
-complete = ["bokeh (>=1.0.0,!=2.0.0)", "distributed (==2021.05.1)", "numpy (>=1.16)", "pandas (>=0.25.0)"]
-dataframe = ["numpy (>=1.16)", "pandas (>=0.25.0)"]
+array = ["numpy (>=1.18)"]
+complete = ["bokeh (>=1.0.0,!=2.0.0)", "distributed (==2021.08.0)", "numpy (>=1.18)", "pandas (>=1.0)"]
+dataframe = ["numpy (>=1.18)", "pandas (>=1.0)"]
 diagnostics = ["bokeh (>=1.0.0,!=2.0.0)"]
-distributed = ["distributed (==2021.05.1)"]
+distributed = ["distributed (==2021.08.0)"]
 test = ["pytest", "pytest-rerunfailures", "pytest-xdist"]
 
 [[package]]
@@ -974,7 +975,7 @@ python-versions = ">=3.6"
 name = "packaging"
 version = "20.8"
 description = "Core utilities for Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -1659,7 +1660,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<3.9"
-content-hash = "50a0a1353f5e7bdb5622e7820965a59c289245d18bfc983378fc13957ae67ec7"
+content-hash = "114d205f4f56b024fdafe080cb10a032bdbff8640fd1f10e9a86a67026d3221d"
 
 [metadata.files]
 alabaster = [
@@ -1850,8 +1851,8 @@ cycler = [
     {file = "cycler-0.10.0.tar.gz", hash = "sha256:cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8"},
 ]
 dask = [
-    {file = "dask-2021.5.1-py3-none-any.whl", hash = "sha256:b24620e64dc978fe0df069143a10c7093c72fcb9e837644b8845a2ffaa10e1ce"},
-    {file = "dask-2021.5.1.tar.gz", hash = "sha256:4f2a0f67cc99ca511cefa0a7d383870807776a17c26a8da788dafb68ab552079"},
+    {file = "dask-2021.8.0-py3-none-any.whl", hash = "sha256:8c1cb9771231bb04d07ed497875e7c62b35faba783e23e3a817fb627aa0afa5c"},
+    {file = "dask-2021.8.0.tar.gz", hash = "sha256:3d4c7f4c29f20ed8ee7bc4ed98b7fb8384accd9a1a166716392d81db9d9e2782"},
 ]
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
