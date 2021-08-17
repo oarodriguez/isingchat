@@ -11,6 +11,7 @@ from subprocess import run
 from typing import List
 
 import click
+from click.exceptions import Exit
 
 PROJECT_DIR = Path(__file__).parent
 SRC_DIR = PROJECT_DIR / "src"
@@ -44,6 +45,93 @@ def _run(command: List[str]):
 
 
 app = click.Group("tasks")
+
+
+def _get_package_info():
+    """Return the package name and version from isingchat.toml."""
+    buffer = run(
+        [POETRY_CMD, "version"], capture_output=True, encoding="utf-8"
+    )
+    buffer_contents = buffer.stdout
+    name: str
+    version_: str
+    # In principle, the package name should have no spaces.
+    name, version_ = buffer_contents.split(" ")
+    return name.strip(), version_.strip()
+
+
+def _get_installed_package_info():
+    """Return the name and version of the installed project package."""
+    import isingchat
+
+    return isingchat.metadata["name"], isingchat.__version__
+
+
+@app.command()
+def install():
+    """Install the current project package.
+
+    Do nothing if the package is already installed.
+    """
+    try:
+        name, version_ = _get_installed_package_info()
+    except ModuleNotFoundError:
+        install_args = [POETRY_CMD, "install"]
+        run(install_args)
+        print("Module installed successfully.")
+        verify_message = (
+            "Check installed version through "
+            """"python -m tasks version" command."""
+        )
+        print(verify_message)
+    else:
+        print(f"{name} {version_} is already installed.")
+
+
+@app.command()
+def uninstall():
+    """Uninstall the current project package.
+
+    Returns an error if the project package is not installed.
+    """
+    try:
+        name, version_ = _get_installed_package_info()
+        pip_args = [PIP_CMD, "uninstall", "--yes", name]
+        run(pip_args)
+        print(f"Package '{name} {version_}' uninstalled successfully.")
+    except ModuleNotFoundError:
+        name, version_ = _get_package_info()
+        raise click.ClickException(
+            f"The package '{name} {version_}' has not been installed."
+        )
+
+
+@app.command()
+def upgrade():
+    """Upgrade the project package installation."""
+    # TODO: Fix uninstall and upgrade procedures.
+    name, new_version = _get_package_info()
+    try:
+        name, old_version = _get_installed_package_info()
+        if old_version == new_version:
+            print("The installed project package is the latest.")
+            raise Exit()
+        pip_args = [PIP_CMD, "uninstall", "--yes", name]
+        run(pip_args)
+        print(f"Package '{name} {old_version}' uninstalled successfully.")
+    except ModuleNotFoundError:
+        raise click.ClickException(
+            f"The package '{name} {new_version}' has not been installed."
+        )
+
+    install_args = [POETRY_CMD, "install"]
+    run(install_args)
+    print("Package upgraded successfully.")
+    verify_message = (
+        "Check installed version through "
+        """"python -m tasks version" command."""
+    )
+    print(verify_message)
 
 
 @app.command()
