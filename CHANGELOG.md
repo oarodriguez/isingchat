@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.7.0 (Unreleased)
+Versions follow [CalVer](https://calver.org).
+
+## 2021.1.0.dev0 (Not yet released)
 
 ### Added
 
@@ -9,6 +11,7 @@
 
 ### Changed
 
+- Switch to [CalVer](https://calver.org) to define library versions.
 - Update `numpy`.
 - Do not pin versions for any dependencies in `pyproject.toml` file.
 
