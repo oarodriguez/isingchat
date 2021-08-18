@@ -4,11 +4,13 @@
 
 ### Added
 
-TODO.
+- Identify code quality issues using `pre-commit`.
+- Add tasks to install, uninstall, and upgrade the project package.
 
 ### Changed
 
-TODO.
+- Update `numpy`.
+- Do not pin versions for any dependencies in `pyproject.toml` file.
 
 ### Deprecated
 
@@ -20,20 +22,22 @@ TODO.
 
 ### Fixed
 
-TODO.
+- Fix the calculation of the norms of the eigenvalues.
+
+---
 
 ## 0.6.0 (2021-06-04)
 
 ### Added
 
-- The configuration file now accepts the parameter `num_tm_eigvals` to 
-  indicate how many transfer-matrix-eigenvalues to use for estimating the 
-  free energy. This may be useful for long chains, where it is impossible 
+- The configuration file now accepts the parameter `num_tm_eigvals` to
+  indicate how many transfer-matrix-eigenvalues to use for estimating the
+  free energy. This may be useful for long chains, where it is impossible
   or terribly slow to calculate all the eigenvalues of the transfer matrix.
 
 ### Changed
 
-- We moved several utility functions from the `ising` module to the `utils` 
+- We moved several utility functions from the `ising` module to the `utils`
   module. Also, we fixed the tests for the `utils` module.
 
 ### Fixed
@@ -44,6 +48,5 @@ TODO.
 
 ### Added
 
-- We added new functionality to calculate the free energy of a finite spin 
+- We added new functionality to calculate the free energy of a finite spin
   chain, in addition to the energy of a chain in the thermodynamic limit.
-  
