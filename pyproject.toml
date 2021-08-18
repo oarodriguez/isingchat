@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "isingchat"
-version = "2021.2.0"
+version = "2021.2.1"
 description = "A library to calculate the thermodynamic properties of a 1D Ising spin chain with beyond nearest-neighbor interactions."
 authors = ["Omar Abel Rodríguez-López <oarodriguez.mx@gmail.com>"]
 

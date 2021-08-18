@@ -1,5 +1,5 @@
 {% set name = "isingchat" %}
-{% set version = "2021.2.0" %}
+{% set version = "2021.2.1" %}
 
 package:
   name: "{{ name | lower }}"

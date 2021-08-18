@@ -2,6 +2,14 @@
 
 Versions follow [CalVer](https://calver.org).
 
+## 2021.2.1 (2021-08-17)
+
+### Fixed
+
+- Fix `conda` recipe.
+
+---
+
 ## 2021.2.0 (2021-08-17)
 
 ### Changed
