@@ -10,7 +10,7 @@ TODO.
 
 ### Changed
 
-TODO.
+- Update `numba`.
 
 ### Deprecated
 
