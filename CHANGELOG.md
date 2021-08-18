@@ -2,27 +2,11 @@
 
 Versions follow [CalVer](https://calver.org).
 
-## 2021.2.0.dev0 (Not yet released)
-
-### Added
-
-TODO.
+## 2021.2.0 (2021-08-17)
 
 ### Changed
 
 - Update `numba`.
-
-### Deprecated
-
-TODO.
-
-### Removed
-
-TODO.
-
-### Fixed
-
-TODO.
 
 ---
 
