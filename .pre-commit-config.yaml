@@ -7,6 +7,8 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        # Conda build recipes are jinja templates, so we exclude them.
+        exclude: meta.yaml
       - id: check-toml
       - id: check-added-large-files
 
@@ -19,7 +21,7 @@ repos:
     rev: 5.8.0
     hooks:
       - id: isort
-        additional_dependencies: [toml]
+        additional_dependencies: [ toml ]
 
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.9.2
@@ -30,4 +32,4 @@ repos:
     rev: 6.1.1
     hooks:
       - id: pydocstyle
-        additional_dependencies: [toml]
+        additional_dependencies: [ toml ]
