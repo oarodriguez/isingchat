@@ -1,8 +1,10 @@
+"""Verify `isingchat.utils` module functionality."""
+
 from isingchat.utils import bin_digits
 
 
 def test_bin_digits():
-    """"""
+    """Verify that we get the binary digits correctly."""
     assert bin_digits(6) == list(map(int, "110"))
     assert bin_digits(7) == list(map(int, "111"))
     assert bin_digits(7, length=0) == list(map(int, "111"))
