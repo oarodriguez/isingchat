@@ -6,6 +6,7 @@ Versions follow [CalVer](https://calver.org).
 
 ### Added
 
+- Add GitHub action to execute tests.
 - Identify code quality issues using `pre-commit`.
 - Add tasks to install, uninstall, and upgrade the project package.
 

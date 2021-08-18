@@ -1,0 +1,92 @@
+# Action for testing purposes.
+# Strongly inspired in poetry main action:
+#   https://github.com/python-poetry/poetry/blob/master/.github/workflows/main.yml
+name: Execute Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "notebooks/**"
+      - "*.md"
+      - "*.rst"
+      - "LICENSE"
+
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "notebooks/**"
+      - "*.md"
+      - "*.rst"
+      - "LICENSE"
+
+jobs:
+  # ****** Tests ******
+  tests:
+
+    strategy:
+      matrix:
+        os: [ windows-latest, ubuntu-latest, macos-latest ]
+        python-version: [ "3.7", "3.8", "3.9" ]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+    name: Running tests on ${{ matrix.os }} / ${{ matrix.python-version }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Show full Python version
+        id: full-python-version
+        shell: bash
+        run: echo ::set-output name=version::$(python -c "import sys; print('-'.join(str(v) for v in sys.version_info))")
+
+      - name: Install poetry
+        shell: bash
+        run: |
+          curl -sL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py \
+            | python - -y
+
+      - name: Update PATH
+        if: ${{ matrix.os != 'windows-latest' }}
+        shell: bash
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Update Path for Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: bash
+        run: echo "$APPDATA\Python\Scripts" >> $GITHUB_PATH
+
+      - name: Configure poetry
+        shell: bash
+        run: poetry config virtualenvs.in-project true
+
+      - name: Set up cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Ensure cache is healthy
+        if: steps.cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: timeout 10s poetry run pip --version || rm -rf .venv
+
+      - name: Install dependencies
+        shell: bash
+        run: poetry install
+
+      - name: Run tests
+        shell: bash
+        run: poetry run python -m tasks tests
