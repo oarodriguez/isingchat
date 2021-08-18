@@ -39,6 +39,7 @@ Sphinx = ">=4.0.2"
 sphinx-rtd-theme = ">=0.5.2"
 coverage = ">=5.5"
 pytest-cov = ">=2.12.1"
+pre-commit = ">=2.14.0"
 
 [tool.poetry.scripts]
 isingchat = "isingchat.cli:main"
@@ -76,4 +77,3 @@ directory = "htmlcov"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
