@@ -2,7 +2,7 @@
 
 Versions follow [CalVer](https://calver.org).
 
-## 2021.1.0.dev0 (Not yet released)
+## 2021.1.0 (2021-08-17)
 
 ### Added
 
@@ -15,14 +15,6 @@ Versions follow [CalVer](https://calver.org).
 - Switch to [CalVer](https://calver.org) to define library versions.
 - Update `numpy`.
 - Do not pin versions for any dependencies in `pyproject.toml` file.
-
-### Deprecated
-
-TODO.
-
-### Removed
-
-TODO.
 
 ### Fixed
 
@@ -47,6 +39,8 @@ TODO.
 ### Fixed
 
 - We corrected the contribution of all eigenvalues to the partition function.
+
+---
 
 ## 0.5.0 (2021-06-03)
 
