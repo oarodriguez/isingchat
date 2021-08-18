@@ -1,3 +1,5 @@
+"""Collection of routines used to study the Ising chain."""
+
 import typing as t
 from dataclasses import dataclass
 from functools import partial
@@ -14,7 +16,7 @@ from .utils import bin_digits, clear_bit, spin_projections
 
 
 def make_spin_proj_table(num_neighbors: int):
-    """Creates the table of spin projections."""
+    """Create the table of spin projections."""
     table = np.empty((2 ** num_neighbors, num_neighbors), dtype="i8")
     for idx in range(2 ** num_neighbors):
         projections = [-2 * v + 1 for v in bin_digits(idx, num_neighbors)]
@@ -46,7 +48,7 @@ def compatible_projections(num_neighbors: int):
 
 @dataclass
 class EnergyData:
-    """"""
+    """Collect the spin chain energies."""
 
     helm_free_erg: float
     helm_free_erg_tl: float
@@ -364,10 +366,10 @@ def energy_thermo_limit_fast(
 def grid_func_base(
     params: t.Tuple[float, float],
     interactions: np.ndarray,
-    finite_chain: False,
+    finite_chain: bool = False,
     num_tm_eigvals: int = None,
 ):
-    """"""
+    """Calculate the spin chain properties over a parameter grid."""
     temperature, magnetic_field = params
     num_neighbors = len(interactions)
     if finite_chain:
@@ -393,7 +395,7 @@ def eval_energy(
     num_tm_eigvals: int = None,
     num_workers: int = None,
 ):
-    """"""
+    """Calculate the energy over a parameter grid."""
     grid_func = partial(
         grid_func_base,
         interactions=interactions,
