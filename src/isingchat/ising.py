@@ -292,7 +292,7 @@ def energy_finite_chain_fast(
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
     # For three or two interactions we take all eigenvalues
-    if len(interactions) <= 15:
+    if len(interactions) <= 11:
         w_matrix_dense = w_matrix.todense()
         w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
         w_norm_eigvals = w_all_norm_eigvals[0]
@@ -581,7 +581,7 @@ def grid_func_base(
     num_neighbors = len(interactions)
     if interactions_2 is not None:
         if finite_chain:
-            return energy_imperfect_chain_fast(
+            return energy_imperfect_finite_chain_fast(
                 temperature,
                 magnetic_field,
                 interactions_1=interactions,

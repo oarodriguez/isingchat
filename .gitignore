@@ -52,6 +52,7 @@ share/
 etc/
 Scripts/
 myscripts/
+custom_python_mod/
 pyvenv.cfg
 #
 build/
