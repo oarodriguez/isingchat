@@ -10,7 +10,8 @@ TODO.
 
 ### Changed
 
-TODO.
+- Calculate all transfer matrix eigenvalues for a finite chain (see routine
+  `energy_finite_chain_fast` in `ising` module).
 
 ### Deprecated
 
