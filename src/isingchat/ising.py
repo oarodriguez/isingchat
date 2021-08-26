@@ -8,6 +8,7 @@ from math import log
 import numpy as np
 from dask import bag
 from numba import njit
+from scipy.linalg import eigvals
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
 
@@ -245,17 +246,7 @@ def energy_finite_chain_fast(
     # Strictly, we should calculate all the eigenvalues and calculate the
     # Free energy according to F. A, Kassan-ogly (2001),
     #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
-    # However, in practice, the contribution of the second largest and
-    # subsequent eigenvalues to the partition function decreases fast, so it
-    # is sufficient to calculate only a few of the largest eigenvalues.
-    if num_tm_eigvals is None:
-        num_eigvals = min(num_neighbors ** 2, num_rows - 2)
-    else:
-        num_eigvals = min(num_tm_eigvals, num_rows - 2)
-    # noinspection PyTypeChecker
-    w_norm_eigvals: np.ndarray = sparse_eigs(
-        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
-    )
+    w_norm_eigvals: np.ndarray = eigvals(w_matrix.todense())
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
