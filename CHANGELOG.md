@@ -10,6 +10,10 @@ TODO.
 
 ### Changed
 
+- Update `conda` recipe version number. By default, we built the `conda` package
+  using the latest commit and set the build number from `git` environment
+  variables.
+
 - Calculate all transfer matrix eigenvalues for a finite chain (see routine
   `energy_finite_chain_fast` in `ising` module).
 
