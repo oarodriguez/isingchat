@@ -53,6 +53,7 @@ etc/
 Scripts/
 myscripts/
 custom_python_mod/
+credentials_git.txt
 pyvenv.cfg
 #
 build/
@@ -201,3 +202,6 @@ dmypy.json
 /data
 /media
 /outputs
+/mathematica
+
+credentials_git*
