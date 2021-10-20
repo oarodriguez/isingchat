@@ -1,3 +1,5 @@
+"""Collection of routines used to study the Ising chain."""
+
 import typing as t
 from dataclasses import dataclass
 from functools import partial
@@ -7,6 +9,7 @@ import numpy as np
 import scipy
 from dask import bag
 from numba import njit
+from scipy.linalg import eigvals
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
 
@@ -20,7 +23,7 @@ from .utils import (
 
 
 def make_spin_proj_table(num_neighbors: int):
-    """Creates the table of spin projections."""
+    """Create the table of spin projections."""
     table = np.empty((2 ** num_neighbors, num_neighbors), dtype="i8")
     for idx in range(2 ** num_neighbors):
         projections = [-2 * v + 1 for v in bin_digits(idx, num_neighbors)]
@@ -52,7 +55,7 @@ def compatible_projections(num_neighbors: int):
 
 @dataclass
 class EnergyData:
-    """"""
+    """Collect the spin chain energies."""
 
     helm_free_erg: float
     helm_free_erg_tl: float
@@ -284,28 +287,17 @@ def energy_finite_chain_fast(
     # Strictly, we should calculate all the eigenvalues and calculate the
     # Free energy according to F. A, Kassan-ogly (2001),
     #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
-    # However, in practice, the contribution of the second largest and
-    # subsequent eigenvalues to the partition function decreases fast, so it
-    # is sufficient to calculate only a few of the largest eigenvalues.
-    if num_tm_eigvals is None:
-        num_eigvals = min(num_neighbors ** 2, num_rows - 2)
-    else:
-        num_eigvals = min(num_tm_eigvals, num_rows - 2)
-    # For three or two interactions we take all eigenvalues
-    if len(interactions) <= 11:
-        w_matrix_dense = w_matrix.todense()
-        w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
-        w_norm_eigvals = w_all_norm_eigvals[0]
-    else:
-        w_norm_eigvals: np.ndarray = sparse_eigs(
-            w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
-        )
+    w_norm_eigvals: np.ndarray = eigvals(w_matrix.todense())
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
-    # print('reduced_eigvals: {}'.format(np.log(reduced_eigvals_contrib.real) / num_neighbors))
+    # print(
+    #     "reduced_eigvals: {}".format(
+    #         np.log(reduced_eigvals_contrib.real) / num_neighbors
+    #     )
+    # )
     # print("\n")
     helm_free_erg = -temp * (
         max_w_log_elem
@@ -313,6 +305,7 @@ def energy_finite_chain_fast(
         + np.log(reduced_eigvals_contrib.real) / num_neighbors
     )
     return helm_free_erg
+
 
 # TODO: check that this function reduce to the regular one
 def energy_imperfect_finite_chain_fast(
@@ -323,7 +316,7 @@ def energy_imperfect_finite_chain_fast(
     num_neighbors: int,
     num_tm_eigvals: int = None,
 ):
-    """Calculate the Helmholtz free energy for a chain with two imperfections."""
+    """Calculate Helmholtz free energy for a chain with two imperfections."""
     # First matrix
     nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions_1, num_neighbors
@@ -354,7 +347,7 @@ def energy_imperfect_finite_chain_fast(
     w_matrix_2 = csr_matrix(
         (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
     )
-    w_matrix = w_matrix_1*w_matrix_2
+    w_matrix = w_matrix_1 * w_matrix_2
     # Strictly, we should calculate all the eigenvalues and calculate the
     # Free energy according to F. A, Kassan-ogly (2001),
     #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
@@ -380,8 +373,9 @@ def energy_imperfect_finite_chain_fast(
     reduced_eigvals = w_norm_eigvals / max_eigval_norm
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
     cellunit = 2
-    helm_free_erg = -(temp/cellunit) * (
-        max_w_log_elem_1 + max_w_log_elem_2
+    helm_free_erg = -(temp / cellunit) * (
+        max_w_log_elem_1
+        + max_w_log_elem_2
         + np.log(max_eigval_norm)
         + np.log(reduced_eigvals_contrib.real) / num_neighbors
     )
@@ -519,7 +513,7 @@ def energy_imperfect_thermo_limit_fast(
     w_matrix_2 = csr_matrix(
         (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
     )
-    w_matrix = w_matrix_1*w_matrix_2
+    w_matrix = w_matrix_1 * w_matrix_2
     # Evaluate the largest eigenvalue only.
     num_eigvals = 1
     w_norm_eigvals: np.ndarray
@@ -532,8 +526,7 @@ def energy_imperfect_thermo_limit_fast(
     # Accordingly, only the largest reduced eigenvalue contributes.
     cellunit = 2
     helm_free_erg_tl = -(temp / cellunit) * (
-        max_w_log_elem_1 + max_w_log_elem_2
-        + log(max_eigval)
+        max_w_log_elem_1 + max_w_log_elem_2 + log(max_eigval)
     )
     return helm_free_erg_tl
 
@@ -576,7 +569,7 @@ def grid_func_base(
     finite_chain: bool = False,
     num_tm_eigvals: int = None,
 ):
-    """"""
+    """Calculate the spin chain properties over a parameter grid."""
     temperature, magnetic_field = params
     num_neighbors = len(interactions)
     if interactions_2 is not None:
@@ -621,7 +614,7 @@ def eval_energy(
     num_tm_eigvals: int = None,
     num_workers: int = None,
 ):
-    """"""
+    """Calculate the energy over a parameter grid."""
     grid_func = partial(
         grid_func_base,
         interactions=interactions,
