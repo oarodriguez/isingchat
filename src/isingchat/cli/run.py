@@ -43,6 +43,10 @@ def run(config_path: str, force: bool):
 
     CONFIG_PATH: The path to the configuration file.
     """
+    import time
+    import psutil
+
+    start = time.perf_counter()
     # Paths to the files used for saving the results data.
     _config_path = pathlib.Path(config_path)
     paths = Paths.from_path(_config_path)
@@ -152,3 +156,9 @@ def run(config_path: str, force: bool):
     completed_text = Padding("🎉 [green bold]Execution completed 🎉", pad=1)
     completed_panel = Panel(completed_text, box=box.DOUBLE_EDGE, expand=False)
     console.print(completed_panel, justify="center")
+    end = time.perf_counter()
+    elapsed = end - start
+    print('total time used: {}'.format(elapsed))
+    print('Memory details: {}'.format(psutil.virtual_memory()))
+
+
