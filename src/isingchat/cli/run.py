@@ -66,12 +66,13 @@ def run(config_path: str, force: bool):
     temperature = system_data["temperature"]
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
-    interactions_2 = system_data["interactions_2"]
+    interactions_2 = system_data.get("interactions_2",None)
     finite_chain = system_data["finite"]
     num_tm_eigvals = system_data["num_tm_eigvals"]
     exec_config = config_data["exec"]
     exec_parallel = exec_config["parallel"]
     num_workers = exec_config.get("num_workers")
+    use_centrosymmetric = config_data["use_centrosymmetric"]
 
     # CLI title message.
     title_text = Text(
@@ -119,6 +120,7 @@ def run(config_path: str, force: bool):
                 interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
+                is_centrosymmetric=use_centrosymmetric
             )
             grid_map = map(grid_func, params_grid)
             for energy_value in grid_map:

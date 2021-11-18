@@ -53,9 +53,7 @@ def read_ising_config(config_data: dict):
     interactions = read_param(interactions_config)
     # Read others hopping terms
     interactions_2_config = hamiltonian_params.get("interactions_2", None)
-    if interactions_2_config is None:
-        interactions_2 = None
-    else:
+    if interactions_2_config is not None:
         interactions_2 = read_param(interactions_2_config)
     # Read the temperature.
     temp_config = hamiltonian_params["temperature"]
@@ -69,10 +67,11 @@ def read_ising_config(config_data: dict):
         exec_config = {"parallel": False}
     # Metadata
     metadata = config_data.get("metadata")
+    # Use centroymmetric property
+    use_centrosymmetric = config_data.get("use_centrosymmetric",None)
     return {
         "system": {
             "interactions": interactions,
-            "interactions_2": interactions_2,
             "temperature": temperature,
             "magnetic_field": magnetic_field,
             "finite": finite_system,
@@ -80,6 +79,7 @@ def read_ising_config(config_data: dict):
         },
         "exec": exec_config,
         "metadata": metadata,
+        "use_centrosymmetric": use_centrosymmetric
     }
 
 
