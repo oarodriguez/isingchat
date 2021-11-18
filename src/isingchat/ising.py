@@ -545,7 +545,7 @@ def energy_thermo_limit_fast_centro(
     num_neighbors: int,
 ):
     """Calculate the Helmholtz free energy of the system using the centrosymmetric
-    property."""
+    property. Note that this is true just for h=0"""
     nnz_elems, nnz_rows, nnz_cols = _centrosym_transfer_matrix_parts_fast(
         temp, mag_field, interactions, num_neighbors
     )
