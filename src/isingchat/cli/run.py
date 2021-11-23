@@ -140,6 +140,7 @@ def run(config_path: str, force: bool):
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
                 num_workers=num_workers,
+                is_centrosymmetric=use_centrosymmetric
             )
 
     grid_shape = params_grid.shape

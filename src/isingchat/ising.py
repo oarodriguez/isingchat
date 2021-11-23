@@ -19,6 +19,7 @@ from .utils import (
     clear_bit,
     convert_bin_to_decimal,
     spin_projections,
+    get_bit_list
 )
 
 
@@ -188,6 +189,60 @@ def _csr_log_transfer_matrix_parts_fast(
     nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
     return nnz_elems, nnz_rows, nnz_cols
 
+@njit(cache=True)
+def _centrosym_log_transfer_matrix_parts_fast(
+    temp: float, interactions: np.ndarray, num_neighbors: int
+):
+    """Calculate the parts of the sparse transfer matrix using the centrosymmetric
+    property. Note this method is used just for h=0
+
+    We use numba to accelerate the calculations.
+    """
+    matrix_size = 2 ** (num_neighbors-1) # for centrosymetric matrix just need a half
+    _nnz_elems = []
+    # for centrosymetric matrix we need to calculate just an a half or matrix
+    _nnz_rows = []
+    _nnz_cols = []
+    for index in range(int(matrix_size/2)):
+        # from top to botton
+        # top_bin = bin_digits(index, num_neighbors-1)
+        top_bin = get_bit_list(index,num_neighbors-1)
+        top_w_elem = 0
+        for ind_2,bin_dig in enumerate(top_bin):
+            if bin_dig == 0:
+                top_w_elem += interactions[ind_2]
+            else:
+                top_w_elem += -interactions[ind_2]
+        # first
+        _nnz_elems.append((top_w_elem + interactions[-1]) / temp)
+        _nnz_rows.append(index)
+        _nnz_cols.append(2*index)
+        # second
+        _nnz_elems.append((top_w_elem - interactions[-1]) / temp)
+        _nnz_rows.append(index)
+        _nnz_cols.append(2*index + 1)
+        # from botton to top
+        # botton_bin = bin_digits(matrix_size-1-index, num_neighbors - 1)
+        botton_bin = get_bit_list(matrix_size-1-index, num_neighbors - 1)
+        botton_w_elem = 0
+        for ind_2,bin_dig in enumerate(botton_bin):
+            if bin_dig == 0:
+                botton_w_elem += interactions[ind_2]
+            else:
+                botton_w_elem += -interactions[ind_2]
+        _nnz_elems.append((botton_w_elem - interactions[-1]) / temp)
+        _nnz_rows.append(matrix_size-1-index)
+        _nnz_cols.append(2*index)
+        # second column
+        _nnz_elems.append((botton_w_elem + interactions[-1]) / temp)
+        _nnz_rows.append(matrix_size-1-index)
+        _nnz_cols.append(2*index+1)
+
+    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
+    nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
+    nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
+    return nnz_elems, nnz_rows, nnz_cols
+
 
 def _csr_finite_log_transfer_matrix_parts_fast(
     temp: float, mag_field: float, interactions: np.ndarray, num_neighbors: int
@@ -217,62 +272,6 @@ def _csr_finite_log_transfer_matrix_parts_fast(
                 proj_two = ref_proj[0]
             w_elem += hop_param * proj_one * proj_two / temp
         _nnz_elems.append(w_elem)
-
-    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
-    nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
-    nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
-    return nnz_elems, nnz_rows, nnz_cols
-
-
-def _centrosym_transfer_matrix_parts_fast(
-    temp: float, mag_field: float, interactions: np.ndarray, num_neighbors: int
-):
-    """Calculate the parts of the sparse transfer matrix using the centrosymmetric
-    property.
-
-    We use numba to accelerate the calculations.
-    """
-    matrix_size = 2 ** (num_neighbors-1) # for centrosymetric matrix just need a half
-    _nnz_elems = []
-    # for centrosymetric matrix we need to calculate just an a half or matrix
-    _nnz_rows = []
-    _nnz_cols = []
-    for index in range(int(matrix_size/2)):
-        # from top to botton
-        ref_proj = spin_projections(index, num_neighbors)
-        proj_one = ref_proj[0]
-        top_w_elem = mag_field * proj_one
-        top_bin = bin_digits(index, num_neighbors-1)
-        for ind_2,bin_dig in enumerate(top_bin):
-            if bin_dig == 0:
-                top_w_elem += interactions[ind_2]
-            else:
-                top_w_elem += -interactions[ind_2]
-        # first
-        _nnz_elems.append((top_w_elem + interactions[-1]) / temp)
-        _nnz_rows.append(index)
-        _nnz_cols.append(2*index)
-        # second
-        _nnz_elems.append((top_w_elem - interactions[-1]) / temp)
-        _nnz_rows.append(index)
-        _nnz_cols.append(2*index + 1)
-        # from botton to top
-        ref_proj = spin_projections(matrix_size-1-index, num_neighbors)
-        proj_one = ref_proj[0]
-        botton_w_elem = mag_field * proj_one
-        botton_bin = bin_digits(matrix_size-1-index, num_neighbors - 1)
-        for ind_2,bin_dig in enumerate(botton_bin):
-            if bin_dig == 0:
-                botton_w_elem += interactions[ind_2]
-            else:
-                botton_w_elem += -interactions[ind_2]
-        _nnz_elems.append((botton_w_elem - interactions[-1]) / temp)
-        _nnz_rows.append(matrix_size-1-index)
-        _nnz_cols.append(2*index)
-        # second column
-        _nnz_elems.append((botton_w_elem + interactions[-1]) / temp)
-        _nnz_rows.append(matrix_size-1-index)
-        _nnz_cols.append(2*index+1)
 
     nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
     nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
@@ -423,6 +422,7 @@ def energy_imperfect_finite_chain_fast(
         w_norm_eigvals: np.ndarray = sparse_eigs(
             w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
         )
+    sparse_eigs()
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
@@ -513,8 +513,8 @@ def energy_thermo_limit_fast(
     num_eigvals = 1
     w_norm_eigvals: np.ndarray
     # noinspection PyTypeChecker
-    w_norm_eigvals, _ = sparse_eigs(
-        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=True
+    w_norm_eigvals = sparse_eigs(
+        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
     )
     # print('max_w_log_elem: {}'.format(max_w_log_elem))
     # print('temp: {}'.format(temp))
@@ -522,7 +522,7 @@ def energy_thermo_limit_fast(
     # print(w_norm_eigvals)
     # print('matrix: ')
     # print(w_matrix)
-    # max_eigvals = w_norm_eigvals.real[0]
+    max_eigvals = w_norm_eigvals.real[0]
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
@@ -540,21 +540,21 @@ def energy_thermo_limit_fast(
 
 def energy_thermo_limit_fast_centro(
     temp: float,
-    mag_field: float,
     interactions: np.ndarray,
     num_neighbors: int,
 ):
     """Calculate the Helmholtz free energy of the system using the centrosymmetric
     property. Note that this is true just for h=0"""
-    nnz_elems, nnz_rows, nnz_cols = _centrosym_transfer_matrix_parts_fast(
-        temp, mag_field, interactions, num_neighbors
+    nnz_elems, nnz_rows, nnz_cols = _centrosym_log_transfer_matrix_parts_fast(
+        temp, interactions, num_neighbors
     )
+
     # Normalize nonzero matrix elements.
     max_w_log_elem = np.max(nnz_elems)
     nnz_elems -= max_w_log_elem
     norm_nnz_elems = np.exp(nnz_elems)
     # Construct the sparse matrix.
-    num_rows = 2 ** num_neighbors
+    num_rows = 2 ** (num_neighbors-1)
     w_shape = (num_rows, num_rows)
     w_matrix = csr_matrix(
         (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
@@ -563,8 +563,8 @@ def energy_thermo_limit_fast_centro(
     num_eigvals = 1
     w_norm_eigvals: np.ndarray
     # noinspection PyTypeChecker
-    w_norm_eigvals, _ = sparse_eigs(
-        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=True
+    w_norm_eigvals = sparse_eigs(
+        w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
     )
     # print('max_w_log_elem: {}'.format(max_w_log_elem))
     # print('temp: {}'.format(temp))
@@ -572,7 +572,6 @@ def energy_thermo_limit_fast_centro(
     # print(w_norm_eigvals)
     # print('matrix: ')
     # print(w_matrix)
-    # max_eigvals = w_norm_eigvals.real[0]
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigval_norm_idx = eigvals_norms.argmax()
     max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
@@ -686,7 +685,6 @@ def grid_func_base(
     if is_centrosymmetric:
         return energy_thermo_limit_fast_centro(
             temperature,
-            magnetic_field,
             interactions=interactions,
             num_neighbors=num_neighbors,
         )
@@ -731,6 +729,8 @@ def eval_energy(
     finite_chain: bool = False,
     num_tm_eigvals: int = None,
     num_workers: int = None,
+    is_centrosymmetric: bool = False
+
 ):
     """Calculate the energy over a parameter grid."""
     grid_func = partial(
@@ -739,6 +739,7 @@ def eval_energy(
         interactions_2=interactions_2,
         finite_chain=finite_chain,
         num_tm_eigvals=num_tm_eigvals,
+        is_centrosymmetric=is_centrosymmetric
     )
     # Evaluate the grid using a multidimensional iterator. This
     # way we do not allocate memory for all the combinations of
