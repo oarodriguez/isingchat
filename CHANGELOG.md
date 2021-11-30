@@ -6,7 +6,7 @@ Versions follow [CalVer](https://calver.org).
 
 ### Added
 
-TODO.
+- Add `psutil` library as a dependency.
 
 ### Changed
 
@@ -16,6 +16,7 @@ TODO.
 
 - Calculate all transfer matrix eigenvalues for a finite chain (see routine
   `energy_finite_chain_fast` in `ising` module).
+- Update `dask` version to `2021.11.2`.
 
 ### Deprecated
 
