@@ -41,6 +41,8 @@ requirements:
     - dask
     - h5py
     - pandas
+    - psutil
+    - joblib
 
 test:
   imports:
