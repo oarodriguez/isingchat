@@ -1,14 +1,20 @@
+"""Routines to evaluate the physical properties from the command line."""
+
+import contextlib
 import json
 import pathlib
 from functools import partial
 
 import click
 import h5py
+import joblib
 import numpy as np
+from joblib import Parallel, delayed
 from rich import box
 from rich.padding import Padding
 from rich.panel import Panel
 from rich.pretty import Pretty
+from rich.progress import TaskID
 from rich.table import Table
 from rich.text import Text
 from ruamel.yaml import YAML
@@ -24,6 +30,29 @@ from .utils import DaskProgressBar, RichProgressBar, columns, console
 yaml = YAML()
 yaml.indent = 2
 yaml.default_flow_style = False
+
+
+@contextlib.contextmanager
+def rich_joblib(progress_bar: RichProgressBar, grid_task: TaskID):
+    """Context manager to patch joblib to report into rich progress bar.
+
+    Based on:
+    https://stackoverflow.com/questions/24983493/tracking-progress-of-joblib-parallel-execution
+    """
+
+    class RichBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
+        def __call__(self, *args, **kwargs):
+            progress_bar.update(grid_task, advance=1)
+            progress_bar.refresh()
+            return super().__call__(*args, **kwargs)
+
+    old_batch_callback = joblib.parallel.BatchCompletionCallBack
+    joblib.parallel.BatchCompletionCallBack = RichBatchCompletionCallback
+    try:
+        progress_bar.start()
+        yield progress_bar
+    finally:
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
 
 
 @click.command()
@@ -44,6 +73,7 @@ def run(config_path: str, force: bool):
     CONFIG_PATH: The path to the configuration file.
     """
     import time
+
     import psutil
 
     start = time.perf_counter()
@@ -70,11 +100,12 @@ def run(config_path: str, force: bool):
     temperature = system_data["temperature"]
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
-    interactions_2 = system_data.get("interactions_2",None)
+    interactions_2 = system_data.get("interactions_2", None)
     finite_chain = system_data["finite"]
     num_tm_eigvals = system_data["num_tm_eigvals"]
     exec_config = config_data["exec"]
     exec_parallel = exec_config["parallel"]
+    prefer_joblib = bool(exec_config.get("prefer_joblib", False))
     num_workers = exec_config.get("num_workers")
     use_centrosymmetric = config_data["use_centrosymmetric"]
 
@@ -124,7 +155,7 @@ def run(config_path: str, force: bool):
                 interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
-                is_centrosymmetric=use_centrosymmetric
+                is_centrosymmetric=use_centrosymmetric,
             )
             grid_map = map(grid_func, params_grid)
             for energy_value in grid_map:
@@ -132,16 +163,42 @@ def run(config_path: str, force: bool):
                 progress_bar.update(grid_task, advance=1)
                 progress_bar.refresh()
     else:
-        with DaskProgressBar():
-            energy_data = eval_energy(
-                params_grid,
+        # It may be convenient to use joblib to distribute the calculations
+        # among the indicated processes if the params grid total size is
+        # relatively small.
+        if prefer_joblib:
+            grid_func = partial(
+                grid_func_base,
                 interactions=interactions,
                 interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
-                num_workers=num_workers,
-                is_centrosymmetric=use_centrosymmetric
+                is_centrosymmetric=use_centrosymmetric,
             )
+            progress_bar = RichProgressBar(
+                *columns, console=console, auto_refresh=False
+            )
+            grid_task = progress_bar.add_task(
+                "[red]Progress", total=params_grid.size
+            )
+            energy_data = []
+            with rich_joblib(progress_bar, grid_task):
+                grid_executor = Parallel(n_jobs=num_workers)
+                grid_map = grid_executor(map(delayed(grid_func), params_grid))
+                for energy_value in grid_map:
+                    energy_data.append(energy_value)
+
+        else:
+            with DaskProgressBar():
+                energy_data = eval_energy(
+                    params_grid,
+                    interactions=interactions,
+                    interactions_2=interactions_2,
+                    finite_chain=finite_chain,
+                    num_tm_eigvals=num_tm_eigvals,
+                    num_workers=num_workers,
+                    is_centrosymmetric=use_centrosymmetric,
+                )
 
     grid_shape = params_grid.shape
     energy_array: np.ndarray = np.asarray(energy_data).reshape(grid_shape)
@@ -159,7 +216,5 @@ def run(config_path: str, force: bool):
     console.print(completed_panel, justify="center")
     end = time.perf_counter()
     elapsed = end - start
-    print('total time used: {}'.format(elapsed))
-    print('Memory details: {}'.format(psutil.virtual_memory()))
-
-
+    print("total time used: {}".format(elapsed))
+    print("Memory details: {}".format(psutil.virtual_memory()))

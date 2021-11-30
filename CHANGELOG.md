@@ -6,6 +6,8 @@ Versions follow [CalVer](https://calver.org).
 
 ### Added
 
+- Add the option to evaluate the free energy in parallel using the `joblib`
+  library.
 - Add `psutil` library as a dependency.
 
 ### Changed

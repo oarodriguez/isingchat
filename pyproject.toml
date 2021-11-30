@@ -24,6 +24,7 @@ dask = { extras = ["bag"], version = ">=2021.1.0" }
 h5py = ">=3.1.0"
 pandas = ">=1.2.3"
 psutil = ">=5.8.0"
+joblib = ">=1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.2.1"
