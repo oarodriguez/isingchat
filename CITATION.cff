@@ -1,0 +1,14 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Rodríguez-López"
+  given-names: "Omar Abel"
+  orcid: "https://orcid.org/0000-0002-3635-9248"
+- family-names: "Martínez-Herrera"
+  given-names: "José Guillermo"
+  orcid: "https://orcid.org/0000-0001-6992-9262"
+title: "One-dimensional Ising model study"
+version: 2.0.4
+doi: 10.5281/zenodo.1234
+date-released: 2017-12-18
+url: "https://github.com/github/linguist"
