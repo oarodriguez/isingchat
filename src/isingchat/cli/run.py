@@ -43,6 +43,10 @@ def run(config_path: str, force: bool):
 
     CONFIG_PATH: The path to the configuration file.
     """
+    import time
+    import psutil
+
+    start = time.perf_counter()
     # Paths to the files used for saving the results data.
     _config_path = pathlib.Path(config_path)
     paths = Paths.from_path(_config_path)
@@ -66,11 +70,13 @@ def run(config_path: str, force: bool):
     temperature = system_data["temperature"]
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
+    interactions_2 = system_data.get("interactions_2",None)
     finite_chain = system_data["finite"]
     num_tm_eigvals = system_data["num_tm_eigvals"]
     exec_config = config_data["exec"]
     exec_parallel = exec_config["parallel"]
     num_workers = exec_config.get("num_workers")
+    use_centrosymmetric = config_data["use_centrosymmetric"]
 
     # CLI title message.
     title_text = Text(
@@ -115,8 +121,10 @@ def run(config_path: str, force: bool):
             grid_func = partial(
                 grid_func_base,
                 interactions=interactions,
+                interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
+                is_centrosymmetric=use_centrosymmetric
             )
             grid_map = map(grid_func, params_grid)
             for energy_value in grid_map:
@@ -127,10 +135,12 @@ def run(config_path: str, force: bool):
         with DaskProgressBar():
             energy_data = eval_energy(
                 params_grid,
-                interactions,
+                interactions=interactions,
+                interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
                 num_workers=num_workers,
+                is_centrosymmetric=use_centrosymmetric
             )
 
     grid_shape = params_grid.shape
@@ -147,3 +157,9 @@ def run(config_path: str, force: bool):
     completed_text = Padding("🎉 [green bold]Execution completed 🎉", pad=1)
     completed_panel = Panel(completed_text, box=box.DOUBLE_EDGE, expand=False)
     console.print(completed_panel, justify="center")
+    end = time.perf_counter()
+    elapsed = end - start
+    print('total time used: {}'.format(elapsed))
+    print('Memory details: {}'.format(psutil.virtual_memory()))
+
+

@@ -1,0 +1,17 @@
+# Arbitrary metadata
+metadata:
+  description: Ising chain with alpha=1.9 and 7 nearest neighbors
+
+system:
+  params:
+    interactions: [1.0, 0.2679433656340733, 0.12401368600376718, 0.0717936471873147, 0.04698475772352077, 0.03322864441253655, 0.024792123347736065]
+
+    temperature:
+      min: 1E-2
+      max: 4
+      num_samples: 512
+
+    magnetic_field: 0
+
+exec:
+  parallel: False

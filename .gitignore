@@ -42,6 +42,20 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+# Guillermo's files
+Config/
+#Notebooks/
+Lib/
+#data/
+#graphs/
+share/
+etc/
+Scripts/
+myscripts/
+custom_python_mod/
+credentials_git.txt
+pyvenv.cfg
+#
 build/
 develop-eggs/
 dist/
@@ -184,7 +198,8 @@ dmypy.json
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
 /.idea/
-/notebooks
-/data
 /media
 /outputs
+/mathematica
+
+credentials_git*

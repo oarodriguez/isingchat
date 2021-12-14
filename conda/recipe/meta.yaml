@@ -14,7 +14,7 @@ build:
   number: {{ GIT_DESCRIBE_NUMBER }}
   noarch: python
   script:
-    - poetry build -f sdist -vv
+    - "poetry build -f sdist -vv"
     - "{{ PYTHON }} -m tarfile -e ./dist/{{ name | lower }}-{{ version }}.tar.gz ./dist/"
     - "rm -f ./dist/{{ name | lower }}-{{ version }}/pyproject.toml"  # [not win]
     - "del /f .\\dist\\{{ name | lower }}-{{ version }}\\pyproject.toml"  # [win]
