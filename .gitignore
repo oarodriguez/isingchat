@@ -44,10 +44,10 @@ __pycache__/
 .Python
 # Guillermo's files
 Config/
-Notebooks/
+#Notebooks/
 Lib/
-data/
-graphs/
+#data/
+#graphs/
 share/
 etc/
 Scripts/
