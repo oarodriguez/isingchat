@@ -1,0 +1,19 @@
+# Arbitrary metadata
+metadata:
+  description: Ising chain with exp_p=1.05 and 5 nearest neighbors
+
+system:
+  params:
+    interactions: [1.0, 0.48296816446242274, 0.31551694088005305, 0.23325824788420185, 0.18453616691811764]
+
+    temperature:
+      min: 0.5
+      max: 4
+      num_samples: 512
+
+    magnetic_field: 0
+
+  finite: True
+  num_tm_eigvals: 32
+exec:
+  parallel: False

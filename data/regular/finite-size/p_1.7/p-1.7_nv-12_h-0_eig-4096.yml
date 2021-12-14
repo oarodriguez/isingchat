@@ -1,0 +1,17 @@
+# Arbitrary metadata
+metadata:
+  description: Ising chain with exp_p=1.7 and 12 nearest neighbors
+
+system:
+  params:
+    interactions: [1.0, 0.3077861033362291, 0.1544876855906566, 0.09473228540689989, 0.0648262638677105, 0.0475491627613807, 0.03658755025553056, 0.02915728098552523, 0.023866444999157566, 0.0199526231496888, 0.016968069534370616, 0.014634971523225498]
+
+    temperature:
+      min: 1.2634601097154041
+      max: 3.263460109715404
+      num_samples: 128
+
+    magnetic_field: 0
+
+  finite: True
+  num_tm_eigvals: 4096

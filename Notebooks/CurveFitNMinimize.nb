@@ -1,0 +1,3072 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[    142598,       3064]
+NotebookOptionsPosition[    141177,       3031]
+NotebookOutlinePosition[    141520,       3046]
+CellTagsIndexPosition[    141477,       3043]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Ajuste de una c\[OAcute]nica por minimizaci\[OAcute]n", "Title",
+ CellChangeTimes->{{3.824830692486002*^9, 
+  3.824830759196974*^9}},ExpressionUUID->"fbafa87a-4476-45c6-9d07-\
+4f30d8ee43ee"],
+
+Cell["\<\
+In this notebook we make the fit plot minimize the square equation (general \
+equation for the canonical curves) with the point of the max of the specific \
+heat.
+Model x^2 + b*xy + c*y^2 +d*x+e*y +f  = 0 \
+\>", "Text",
+ CellChangeTimes->{{3.8248307705097265`*^9, 3.8248308798064957`*^9}, {
+  3.8248309775511513`*^9, 
+  3.824831041240863*^9}},ExpressionUUID->"dd45b07f-8465-4c8d-9563-\
+ff8d6e17163b"],
+
+Cell[CellGroupData[{
+
+Cell["Exporting the max Cv values", "Subtitle",
+ CellChangeTimes->{{3.824830884095029*^9, 3.824830896860905*^9}, {
+  3.824831051141391*^9, 
+  3.8248310778410044`*^9}},ExpressionUUID->"ddfbf7c6-6fc4-4380-8653-\
+65a9fbfa9bad"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+  "dataPath", "=", 
+   "\"\<C:\\Users\\MHJGuillermo\\PycharmProjects\\Doctorado\\Ising\\Varios_\
+vecinos\\venv\\data\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"datasetCv", " ", "=", " ", 
+  RowBox[{"Import", "[", 
+   RowBox[{
+    RowBox[{"StringJoin", "[", 
+     RowBox[{"dataPath", ",", "\"\<\\All_Tc.csv\>\""}], "]"}], ",", 
+    "\"\<Dataset\>\"", ",", 
+    RowBox[{"\"\<HeaderLines\>\"", "\[Rule]", "1"}]}], "]"}]}]}], "Input",
+ CellChangeTimes->{{3.8248311313708787`*^9, 3.8248311313728733`*^9}, {
+  3.8248312498211737`*^9, 3.8248313400389557`*^9}},
+ EmphasizeSyntaxErrors->True,
+ CellLabel->"In[2]:=",ExpressionUUID->"4ebbaa0f-aa71-4f33-b60c-44546a69a76d"],
+
+Cell[BoxData[
+ TemplateBox[{TagBox[
+    DynamicModuleBox[{
+     TypeSystem`NestedGrid`PackagePrivate`$state$$ = 
+      Data`UnorderedAssociation[
+       "RowCount" -> 17, "Length" -> 17, "InitialType" -> TypeSystem`Vector[
+          
+          TypeSystem`Struct[{
+           "nv", "P0.5", "P1.0", "P1.1", "P1.2", "P1.3", "P1.4", "P1.5", 
+            "P1.6", "P1.7", "P1.8", "P1.9", "P2.0", "P2.5", "P4", "P5", 
+            "Incert"}, {
+            TypeSystem`Atom[Integer], TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType}], 17], "Shape" -> 
+        TypeSystem`PackageScope`HeaderShape[
+          
+          Association[{All, "nv"} -> 1, {All, "P0.5"} -> 1, {All, "P1.0"} -> 
+           1, {All, "P1.1"} -> 1, {All, "P1.2"} -> 1, {All, "P1.3"} -> 
+           1, {All, "P1.4"} -> 1, {All, "P1.5"} -> 1, {All, "P1.6"} -> 
+           1, {All, "P1.7"} -> 1, {All, "P1.8"} -> 1, {All, "P1.9"} -> 
+           1, {All, "P2.0"} -> 1, {All, "P2.5"} -> 1, {All, "P4"} -> 
+           1, {All, "P5"} -> 1, {All, "Incert"} -> 1], 
+          TypeSystem`PackageScope`Limited[
+           TypeSystem`PackageScope`ColumnShape[
+            TypeSystem`PackageScope`RowShape[
+             Association[
+             "nv" -> TypeSystem`PackageScope`AtomShape[34], "P0.5" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.0" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.1" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.2" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.3" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.4" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.5" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.6" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.7" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.8" -> 
+              TypeSystem`PackageScope`UnknownShape, "P1.9" -> 
+              TypeSystem`PackageScope`UnknownShape, "P2.0" -> 
+              TypeSystem`PackageScope`UnknownShape, "P2.5" -> 
+              TypeSystem`PackageScope`UnknownShape, "P4" -> 
+              TypeSystem`PackageScope`UnknownShape, "P5" -> 
+              TypeSystem`PackageScope`UnknownShape, "Incert" -> 
+              TypeSystem`PackageScope`UnknownShape]]], 17, {}]], 
+        "InitialData" -> TypeSystem`PackageScope`CacheHandle[1886026044], 
+        "Type" -> TypeSystem`Vector[
+          
+          TypeSystem`Struct[{
+           "nv", "P0.5", "P1.0", "P1.1", "P1.2", "P1.3", "P1.4", "P1.5", 
+            "P1.6", "P1.7", "P1.8", "P1.9", "P2.0", "P2.5", "P4", "P5", 
+            "Incert"}, {
+            TypeSystem`Atom[Integer], TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType, TypeSystem`AnyType, 
+            TypeSystem`AnyType, TypeSystem`AnyType}], 17], "HandleQ" -> True, 
+        "RowTarget" -> 20, "Data" -> 
+        TypeSystem`PackageScope`CacheHandle[1886026044]], 
+      TypeSystem`NestedGrid`PackagePrivate`$path$$ = {}, 
+      TypeSystem`NestedGrid`PackagePrivate`$pos$$ = 1, 
+      TypeSystem`NestedGrid`PackagePrivate`$grid$$ = 
+      DynamicModule[{
+        TypeSystem`NestedGrid`PackagePrivate`renderedGrid = Deploy[
+           Style[
+            Grid[{{
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"nv\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"nv\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "nv"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "nv"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P0.5\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P0.5\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P0.5"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P0.5"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.0\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.0\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.0"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.0"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.1\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.1\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.1"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.1"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.2\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.2\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.2"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.2"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.3\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.3\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.3"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.3"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.4\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.4\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.4"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.4"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.5\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.5\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.5"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.5"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.6\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.6\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.6"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.6"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.7\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.7\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.7"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.7"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.8\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.8\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.8"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.8"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P1.9\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P1.9\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P1.9"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P1.9"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P2.0\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P2.0\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P2.0"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P2.0"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P2.5\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P2.5\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P2.5"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P2.5"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P4\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P4\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P4"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P4"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"P5\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"P5\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "P5"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "P5"]], "Mouse"], Background -> 
+                GrayLevel[0.95], Alignment -> {Left, Baseline}], 
+               Item[
+                Annotation[
+                 EventHandler[
+                  MouseAppearance[
+                   Mouseover[
+                    Pane[
+                    RawBoxes[
+                    StyleBox["\"Incert\"", FontColor -> GrayLevel[0.4]]], {{
+                    20, Full}, 15}], 
+                    Style[
+                    Pane[
+                    RawBoxes[
+                    StyleBox[
+                    "\"Incert\"", FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], {{20, Full}, 15}], FontColor -> 
+                    RGBColor[
+                    0.27450980392156865`, 0.5372549019607843, 
+                    0.792156862745098]]], "LinkHand"], {"MouseClicked", 1} :> 
+                  TypeSystem`NestedGrid`PackagePrivate`updateState[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+                    1004360832][{All, "Incert"}]], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[All, "Incert"]], "Mouse"], 
+                Background -> GrayLevel[0.95], 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["2"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.65008"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.50893"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.46995"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.42827"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.39464"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.36079"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.33027"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.29842"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.27113"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.24465"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.2185"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.19685"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.0955"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.945082"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.82504"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[1, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["3"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.52279"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.97869"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.89292"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.8301"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.74053"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.67461"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.61399"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.55571"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.50308"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.45525"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.40952"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.36475"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.21491"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.945082"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.82504"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[2, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["4"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.24092"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.34903"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.21844"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.11491"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.99495"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.89292"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.80077"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.72334"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.64927"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.58392"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.52257"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.4692"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.24859"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.945082"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.82504"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[3, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["5"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.98991"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.6609"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.48548"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.32575"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.18968"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.06055"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.95021"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.84614"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.75453"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.66994"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.59664"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.53048"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.27519"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.945082"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.82504"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[4, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["6"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["4.5595"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.93184"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.71353"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.52038"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.35449"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.197"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.05519"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.9397"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.8325"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.73954"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.65122"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.576"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.29351"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.945082"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.82504"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[5, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["7"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["5.15964"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.17354"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.9143"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.68506"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.48953"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.31005"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.15974"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.01767"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.89487"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.78519"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.69215"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.60568"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.30546"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.945082"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.82504"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[6, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["8"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.38984"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[7, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["9"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.58915"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[8, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["10"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.77284"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[9, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["11"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.94284"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[10, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["12"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["4.10112"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[11, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["13"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["4.24963"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[12, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["14"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["4.39033"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[13, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["15"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["9.30142"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["4.52369"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.99389"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.54787"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.17294"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.85442"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.58371"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.3532"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.15647"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.98775"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.84392"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.72045"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.32315"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[14, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["16"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.72228"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[15, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["19"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.73791"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[16, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}, {
+               Pane[
+                Annotation[
+                 RawBoxes["20"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["nv"]]], "Mouse"], 
+                ImageSize -> {{34, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P0.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["5.09722"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["4.4349"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.1"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.88735"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.2"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.43214"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.3"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["3.05188"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.4"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.73246"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.5"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.4639"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.6"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.23686"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.7"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["2.04541"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.8"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.88271"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P1.9"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["1.74558"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P2.0"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P2.5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P4"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation["", 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["P5"]]], "Mouse"], 
+                ImageSize -> {{0., Full}, Automatic}, 
+                Alignment -> {Left, Baseline}], 
+               Pane[
+                Annotation[
+                 RawBoxes["0.03125"], 
+                 TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+                  GeneralUtilities`Slice[17, 
+                   Key["Incert"]]], "Mouse"], 
+                ImageSize -> {{60, Full}, Automatic}, 
+                Alignment -> {Left, Baseline}]}}, BaseStyle -> {ContextMenu -> {
+                 MenuItem["Copy position to clipboard", 
+                  KernelExecute[
+                   TypeSystem`NestedGrid`PackagePrivate`toCurrentPosition[
+                   TypeSystem`NestedGrid`PackagePrivate`copyClip]], 
+                  MenuEvaluator -> Automatic], 
+                 MenuItem["Copy data to clipboard", 
+                  KernelExecute[
+                   TypeSystem`NestedGrid`PackagePrivate`toCurrentData[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`copyClip]], 
+                  MenuEvaluator -> Automatic], Delimiter, 
+                 MenuItem["Paste position in new cell", 
+                  KernelExecute[
+                   TypeSystem`NestedGrid`PackagePrivate`toCurrentPosition[
+                   TypeSystem`NestedGrid`PackagePrivate`cellPaste]], 
+                  MenuEvaluator -> Automatic], 
+                 MenuItem["Paste data in new cell", 
+                  KernelExecute[
+                   TypeSystem`NestedGrid`PackagePrivate`toCurrentData[
+                   TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                    TypeSystem`NestedGrid`PackagePrivate`cellPaste]], 
+                  MenuEvaluator -> Automatic]}, FontFamily -> "Verdana", 
+               FontSize -> 12}, Alignment -> Left, RowMinHeight -> 1.5, 
+             Dividers -> All, FrameStyle -> GrayLevel[0.85], 
+             BaseStyle -> {FontFamily -> "Verdana", FontSize -> 12}], 
+            LineBreakWithin -> False, ContextMenu -> {}, NumberMarks -> False,
+             ShowAutoStyles -> False]], 
+         TypeSystem`NestedGrid`PackagePrivate`initialQ = True, 
+         TypeSystem`NestedGrid`PackagePrivate`self = $Failed}, 
+        Dynamic[
+         TypeSystem`NestedGrid`PackagePrivate`setupViewPath[
+         TypeSystem`NestedGrid`PackagePrivate`$path$$, If[
+            Not[TypeSystem`NestedGrid`PackagePrivate`initialQ], 
+            
+            Module[{TypeSystem`NestedGrid`PackagePrivate`tmpGrid$ = $Failed, 
+              TypeSystem`NestedGrid`PackagePrivate`tmpData$ = 
+              TypeSystem`NestedGrid`PackagePrivate`LookupCacheValue[
+                TypeSystem`NestedGrid`PackagePrivate`$state$$["Data"]]}, 
+             TypeSystem`NestedGrid`PackagePrivate`tmpGrid$ = 
+              If[TypeSystem`NestedGrid`PackagePrivate`tmpData$ === 
+                TypeSystem`NestedGrid`PackagePrivate`$NotCached, 
+                TypeSystem`NestedGrid`PackagePrivate`renderedGrid, 
+                TypeSystem`NestedGrid`PackagePrivate`renderGrid[
+                TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                 TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                 TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+                 TypeSystem`NestedGrid`PackagePrivate`$grid$$, 1004360832][
+                TypeSystem`NestedGrid`PackagePrivate`tmpData$]]; If[
+               Not[
+                FailureQ[TypeSystem`NestedGrid`PackagePrivate`tmpGrid$]], 
+               TypeSystem`NestedGrid`PackagePrivate`renderedGrid = 
+               TypeSystem`NestedGrid`PackagePrivate`tmpGrid$]; Null]]; 
+          TypeSystem`NestedGrid`PackagePrivate`initialQ = False; 
+          TypeSystem`NestedGrid`PackagePrivate`$pos$$; If[
+            FailureQ[TypeSystem`NestedGrid`PackagePrivate`renderedGrid], 
+            TypeSystem`SparseGrid[
+             TypeSystem`H["(data no longer present)"]], 
+            If[GeneralUtilities`$DebugMode, 
+             Row[{TypeSystem`NestedGrid`PackagePrivate`renderedGrid, "  ", 
+               TypeSystem`NestedGrid`PackagePrivate`formatState[
+               TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+                TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+                TypeSystem`NestedGrid`PackagePrivate`$pos$$]}], 
+             TypeSystem`NestedGrid`PackagePrivate`renderedGrid]]], 
+         TrackedSymbols :> {TypeSystem`NestedGrid`PackagePrivate`$pos$$}], 
+        DynamicModuleValues :> {}], 
+      TypeSystem`NestedGrid`PackagePrivate`$posCell$$, 
+      TypeSystem`NestedGrid`PackagePrivate`$topBar$$ = Dynamic[
+        TypeSystem`NestedGrid`PackagePrivate`alignBar[
+        TypeSystem`NestedGrid`PackagePrivate`$state$$][
+         TypeSystem`NestedGrid`PackagePrivate`makeFramedBar[
+          TypeSystem`PackageScope`Pathbar[
+          TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+           TypeSystem`NestedGrid`PackagePrivate`updateState[
+           TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+            TypeSystem`NestedGrid`PackagePrivate`$path$$, 
+            TypeSystem`NestedGrid`PackagePrivate`$pos$$, 
+            TypeSystem`NestedGrid`PackagePrivate`$grid$$, 1004360832]]]], 
+        TrackedSymbols :> {TypeSystem`NestedGrid`PackagePrivate`$path$$}], 
+      TypeSystem`NestedGrid`PackagePrivate`$bottomBar$$ = Framed[
+        Dynamic[
+         Replace[
+          MouseAnnotation[Null], {
+          TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][Null] -> 
+           "", TypeSystem`NestedGrid`PackagePrivate`$SliceMarker[1004360832][
+             Pattern[TypeSystem`NestedGrid`PackagePrivate`path, 
+              Blank[]]] :> (
+            TypeSystem`NestedGrid`PackagePrivate`$lastPath = 
+             TypeSystem`NestedGrid`PackagePrivate`path; 
+            TypeSystem`NestedGrid`PackagePrivate`makePathTrail[
+             TypeSystem`NestedGrid`PackagePrivate`path, 
+              TypeSystem`NestedGrid`PackagePrivate`makePathElements]), Null :> 
+           Spacer[10], Blank[] :> Spacer[10]}], TrackedSymbols :> {}], 
+        FrameStyle -> None, ImageMargins -> 0, FrameMargins -> 0, Alignment -> 
+        Top, ImageSize -> {Automatic, 14}]}, 
+     DynamicBox[
+      ToBoxes[
+       Column[
+        If[TypeSystem`NestedGrid`PackagePrivate`$path$$ == {}, {
+          TypeSystem`NestedGrid`PackagePrivate`displayScrollBar[
+          TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+           TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+           TypeSystem`NestedGrid`PackagePrivate`$pos$$], 
+          TypeSystem`NestedGrid`PackagePrivate`onDesktopShow[
+           TypeSystem`NestedGrid`PackagePrivate`alignBar[
+           TypeSystem`NestedGrid`PackagePrivate`$state$$][
+           TypeSystem`NestedGrid`PackagePrivate`$bottomBar$$]]}, {
+         TypeSystem`NestedGrid`PackagePrivate`$topBar$$, 
+          TypeSystem`NestedGrid`PackagePrivate`displayScrollBar[
+          TypeSystem`NestedGrid`PackagePrivate`$grid$$, 
+           TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+           TypeSystem`NestedGrid`PackagePrivate`$pos$$], 
+          TypeSystem`NestedGrid`PackagePrivate`onDesktopShow[
+           TypeSystem`NestedGrid`PackagePrivate`alignBar[
+           TypeSystem`NestedGrid`PackagePrivate`$state$$][
+           TypeSystem`NestedGrid`PackagePrivate`$bottomBar$$]]}], Spacings -> 
+        If[TypeSystem`NestedGrid`PackagePrivate`$path$$ == {}, 
+          0, {{}, {0, 0.05, 0}}]], StandardForm], 
+      ImageSizeCache -> {1149., {230., 236.}}, 
+      TrackedSymbols :> {
+       TypeSystem`NestedGrid`PackagePrivate`$state$$, 
+        TypeSystem`NestedGrid`PackagePrivate`$grid$$}], 
+     BaseStyle -> {LineBreakWithin -> False}, Deinitialization :> 
+     TypeSystem`NestedGrid`PackagePrivate`deleteState[
+      TypeSystem`NestedGrid`PackagePrivate`$state$$], 
+     DynamicModuleValues :> {}, Initialization :> 
+     Block[{$ContextPath = $ContextPath}, 
+       Needs["TypeSystem`"]]], Deploy, DefaultBaseStyle -> "Deploy"]},
+  "CopyTag",
+  DisplayFunction->(#& ),
+  InterpretationFunction->("Dataset[<>]"& )]], "Output",
+ CellChangeTimes->{3.8248313434767623`*^9},
+ CellLabel->"Out[3]=",ExpressionUUID->"d4b072b7-c2fc-4fa0-80de-2c547c47d58d"]
+}, Open  ]],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"dataSelect", " ", "=", " ", 
+   RowBox[{"datasetCv", "[", 
+    RowBox[{
+     RowBox[{"Select", "[", 
+      RowBox[{
+       RowBox[{"#\"P1.0\"", " ", "\[NotEqual]", " ", "\"\<\>\""}], "&"}], 
+      "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"\"\<nv\>\"", ",", "\"\<P1.0\>\""}], "}"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"xData", " ", "=", " ", 
+   RowBox[{"dataSelect", "[", 
+    RowBox[{"All", ",", "\"\<nv\>\""}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"yData", " ", "=", " ", 
+   RowBox[{"dataSelect", "[", 
+    RowBox[{"All", ",", "\"\<P1.0\>\""}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.8248315322769938`*^9, 3.8248315416369348`*^9}, {
+  3.824831610269429*^9, 3.8248316145300374`*^9}, {3.824831644929757*^9, 
+  3.8248317443349733`*^9}, {3.8248318519701853`*^9, 3.8248318628929806`*^9}, {
+  3.824831893254803*^9, 3.824831926140873*^9}, {3.8248319770726943`*^9, 
+  3.8248319904040513`*^9}, {3.824832108349695*^9, 3.824832206576064*^9}, {
+  3.8248322670513678`*^9, 3.824832280717828*^9}, {3.824832469200874*^9, 
+  3.82483265057393*^9}, {3.824832688206313*^9, 3.824832867213693*^9}, {
+  3.8248330984604*^9, 3.8248331147598195`*^9}},
+ CellLabel->"In[38]:=",ExpressionUUID->"940da793-2756-4ba7-8cce-5cc1f95c866d"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"yData", "[", "2", "]"}]], "Input",
+ CellChangeTimes->{{3.824832878497523*^9, 3.8248328904795184`*^9}},
+ CellLabel->"In[41]:=",ExpressionUUID->"412cc06b-09bb-4615-a16b-998f733a1e91"],
+
+Cell[BoxData["1.978685882`"], "Output",
+ CellChangeTimes->{{3.824832882676381*^9, 3.82483289089338*^9}, {
+  3.824833104095333*^9, 3.8248331187860537`*^9}},
+ CellLabel->"Out[41]=",ExpressionUUID->"c0fdbacd-7a66-42e8-adf5-266fd2c24b89"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"lengthData", " ", "=", " ", 
+   RowBox[{"Length", "[", "yData", "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"NMinimize", "[", 
+  RowBox[{
+   RowBox[{
+    UnderoverscriptBox["\[Sum]", 
+     RowBox[{"i", "=", "1"}], "lengthData"], 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"xData", "[", "i", "]"}], ")"}], "^", "2"}], "+", 
+       RowBox[{"b", "*", 
+        RowBox[{"xData", "[", "i", "]"}], "*", 
+        RowBox[{"yData", "[", "i", "]"}]}], "+", 
+       RowBox[{"c", "*", 
+        RowBox[{
+         RowBox[{"yData", "[", "i", "]"}], "^", "2"}]}], "+", 
+       RowBox[{"d", "*", 
+        RowBox[{"xData", "[", "i", "]"}]}], "+", 
+       RowBox[{"e", "*", 
+        RowBox[{"yData", "[", "i", "]"}]}], "+", "f"}], ")"}], "^", "2"}]}], 
+   ",", 
+   RowBox[{"{", 
+    RowBox[{"b", ",", "c", ",", "d", ",", "e", ",", "f"}], "}"}]}], 
+  "]"}]}], "Input",
+ CellChangeTimes->{{3.8248329012127886`*^9, 3.824832927904422*^9}, {
+  3.824833126737794*^9, 3.8248331269891214`*^9}},
+ CellLabel->"In[42]:=",ExpressionUUID->"14ff0c54-d3ae-4af3-9561-6197121895f8"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"17.348316090004584`", ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"b", "\[Rule]", 
+      RowBox[{"-", "6.353951358415886`"}]}], ",", 
+     RowBox[{"c", "\[Rule]", "42.05445827818495`"}], ",", 
+     RowBox[{"d", "\[Rule]", 
+      RowBox[{"-", "30.868929958736953`"}]}], ",", 
+     RowBox[{"e", "\[Rule]", 
+      RowBox[{"-", "58.224770289054284`"}]}], ",", 
+     RowBox[{"f", "\[Rule]", "70.4303384285874`"}]}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.824833133743065*^9},
+ CellLabel->"Out[43]=",ExpressionUUID->"ecc52bca-6c1e-4d9f-9547-80a3a9d80cc6"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.824831409433448*^9, 3.8248315021215897`*^9}, {
+   3.824832932379458*^9, 3.8248330868644047`*^9}, 
+   3.8248331255429883`*^9},ExpressionUUID->"5c813d56-a53f-404a-84ae-\
+c431c8eb9a1f"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{759, 601},
+WindowMargins->{{Automatic, 295}, {24, Automatic}},
+FrontEndVersion->"12.0 for Microsoft Windows (64-bit) (April 8, 2019)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 196, 3, 156, "Title",ExpressionUUID->"fbafa87a-4476-45c6-9d07-4f30d8ee43ee"],
+Cell[779, 27, 410, 9, 78, "Text",ExpressionUUID->"dd45b07f-8465-4c8d-9563-ff8d6e17163b"],
+Cell[CellGroupData[{
+Cell[1214, 40, 224, 4, 53, "Subtitle",ExpressionUUID->"ddfbf7c6-6fc4-4380-8653-65a9fbfa9bad"],
+Cell[CellGroupData[{
+Cell[1463, 48, 703, 16, 67, "Input",ExpressionUUID->"4ebbaa0f-aa71-4f33-b60c-44546a69a76d"],
+Cell[2169, 66, 135149, 2858, 485, "Output",ExpressionUUID->"d4b072b7-c2fc-4fa0-80de-2c547c47d58d"]
+}, Open  ]],
+Cell[137333, 2927, 1311, 28, 67, "Input",ExpressionUUID->"940da793-2756-4ba7-8cce-5cc1f95c866d"],
+Cell[CellGroupData[{
+Cell[138669, 2959, 205, 3, 28, "Input",ExpressionUUID->"412cc06b-09bb-4615-a16b-998f733a1e91"],
+Cell[138877, 2964, 234, 3, 32, "Output",ExpressionUUID->"c0fdbacd-7a66-42e8-adf5-266fd2c24b89"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[139148, 2972, 1146, 31, 142, "Input",ExpressionUUID->"14ff0c54-d3ae-4af3-9561-6197121895f8"],
+Cell[140297, 3005, 606, 15, 65, "Output",ExpressionUUID->"ecc52bca-6c1e-4d9f-9547-80a3a9d80cc6"]
+}, Open  ]],
+Cell[140918, 3023, 231, 4, 28, "Input",ExpressionUUID->"5c813d56-a53f-404a-84ae-c431c8eb9a1f"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
