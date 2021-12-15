@@ -100,6 +100,9 @@ The project is organized as follows
     + ising.py: Main calculation code
  + conda/recipe/: recipes for conda-build construction package
  + scripts/
+ + docs/
+    + hardware/
+        + cpuinfo: Hardware specifications used
  + test/
  + notebooks/: Folder with all notebook experiment for thermodynamic analysis
  + data/: all data calculated 
