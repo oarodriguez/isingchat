@@ -47,7 +47,7 @@ Config/
 #Notebooks/
 Lib/
 data/
-#graphs/
+graphs/
 share/
 etc/
 Scripts/
