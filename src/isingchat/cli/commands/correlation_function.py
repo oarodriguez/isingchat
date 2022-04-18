@@ -1,30 +1,4 @@
-import json
-import pathlib
-from functools import partial
-
-import click
-import h5py
-import numpy as np
-from rich import box
-from rich.padding import Padding
-from rich.panel import Panel
-from rich.pretty import Pretty
-from rich.table import Table
-from rich.text import Text
-from ruamel.yaml import YAML
-
-from isingchat.exec_ import ParamsGrid
-from isingchat.io import read_ising_config, save_free_energy_data
-from isingchat.ising import eval_energy, grid_func_base
-
-from .common import Paths
-from .exceptions import CLIError
-from .utils import DaskProgressBar, RichProgressBar, columns, console
-
-yaml = YAML()
-yaml.indent = 2
-yaml.default_flow_style = False
-
+from . import *
 
 @click.command()
 @click.argument(
@@ -38,8 +12,9 @@ yaml.default_flow_style = False
     help="If given, any result stored in the output directory will "
     "be overwritten.",
 )
-def run(config_path: str, force: bool):
-    """Properties of the 1D Ising chain with long-range interactions.
+def correlation_function(config_path: str, force: bool):
+    """
+    Correlation_function of the 1D Ising chain with long-range interactions.
 
     CONFIG_PATH: The path to the configuration file.
     """
@@ -53,11 +28,11 @@ def run(config_path: str, force: bool):
 
     # Handle flow if the force flag is enabled.
     _config_path = paths.config
-    _energy_data_path = paths.free_energy
+    _cor_function_data_path = paths.cor_function
     if not force:
-        if _energy_data_path.exists():
+        if _cor_function_data_path.exists():
             raise CLIError(
-                f"the file '{_energy_data_path.name}' with results "
+                f"the file '{_cor_function_data_path.name}' with results "
                 f"exists in the output directory"
             )
 
@@ -67,6 +42,7 @@ def run(config_path: str, force: bool):
     # Read the config data.
     config_data = read_ising_config(config_info)
     system_data = config_data["system"]
+    spin_spin_dist = system_data["spin_spin_dist"]
     temperature = system_data["temperature"]
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
@@ -107,8 +83,8 @@ def run(config_path: str, force: bool):
     console.print(title_panel)
     console.print(config_panel)
 
-    # Evaluate the energy over the parameters grid.
-    params_grid = ParamsGrid(temperature, magnetic_field)
+    # Evaluate the cor_function over the parameters grid.
+    params_grid = ParamsGrid3D(spin_spin_dist, temperature, magnetic_field)
     if not exec_parallel:
         progress_bar = RichProgressBar(
             *columns, console=console, auto_refresh=False
@@ -117,9 +93,9 @@ def run(config_path: str, force: bool):
             "[red]Progress", total=params_grid.size
         )
         with progress_bar:
-            energy_data = []
+            cor_function_data = []
             grid_func = partial(
-                grid_func_base,
+                grid_func_base_cor_func,
                 interactions=interactions,
                 interactions_2=interactions_2,
                 finite_chain=finite_chain,
@@ -127,30 +103,22 @@ def run(config_path: str, force: bool):
                 is_centrosymmetric=use_centrosymmetric
             )
             grid_map = map(grid_func, params_grid)
-            for energy_value in grid_map:
-                energy_data.append(energy_value)
+            for cor_function_value in grid_map:
+                cor_function_data.append(cor_function_value)
                 progress_bar.update(grid_task, advance=1)
                 progress_bar.refresh()
     else:
-        with DaskProgressBar():
-            energy_data = eval_energy(
-                params_grid,
-                interactions=interactions,
-                interactions_2=interactions_2,
-                finite_chain=finite_chain,
-                num_tm_eigvals=num_tm_eigvals,
-                num_workers=num_workers,
-                is_centrosymmetric=use_centrosymmetric
-            )
+        print('parallel process is not available')
+        return 0
 
     grid_shape = params_grid.shape
-    energy_array: np.ndarray = np.asarray(energy_data).reshape(grid_shape)
+    cor_function_array: np.ndarray = np.asarray(cor_function_data).reshape(grid_shape)
 
     # Export the data.
-    with h5py.File(_energy_data_path, "w") as h5_file:
-        save_free_energy_data(energy_array, h5_file)
+    with h5py.File(_cor_function_data_path, "w") as h5_file:
+        save_cor_function_data(cor_function_array, h5_file)
     console.print(
-        Padding(f"Results data file '{_energy_data_path}' saved", pad=(0, 1))
+        Padding(f"Results data file '{_cor_function_data_path}' saved", pad=(0, 1))
     )
 
     # Display a nice "Completed" message.
@@ -161,5 +129,3 @@ def run(config_path: str, force: bool):
     elapsed = end - start
     print('total time used: {}'.format(elapsed))
     print('Memory details: {}'.format(psutil.virtual_memory()))
-
-

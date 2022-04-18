@@ -9,9 +9,12 @@ system:
     temperature:
       min: 0.5
       max: 4
-      num_samples: 1
+      num_samples: 3
 
-    magnetic_field: 0
+    magnetic_field:
+      min: 0
+      max: 1
+      num_samples: 2
 
 exec:
   parallel: False

@@ -9,8 +9,8 @@ system:
     interactions_2: [0.4444444444444444, 0.16, 0.0625, 0.04, 0.023668639053254437, 0.017777777777777778]
 
     temperature:
-      min: 0.5
-      max: 4
+      min: 0.1
+      max: 5
       num_samples: 512
 
     magnetic_field: 0

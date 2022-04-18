@@ -91,6 +91,21 @@ shell.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+### Build packages with conda 
+Install conda-build
+```
+pip install conda-build
+```
+Then, build the conda package running
+```
+conda-build isingchat
+```
+When conda-build is finished, it displays the package filename and location.
+Install your newly built program on your local computer by
+```
+conda install --use-local isingchat
+```
+
 ## Organization
 The project is organized as follows
 

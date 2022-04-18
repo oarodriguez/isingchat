@@ -2,9 +2,18 @@ import pathlib
 
 import click
 
-from .run import run
+from .commands.run import run
+from .commands.eigens import eigens
+from .commands.correlation_function import correlation_function
+from .commands.correlation_length import correlation_length
 
-COMMANDS = {"run": run}
+
+COMMANDS = {
+    "run": run,
+    "eigens": eigens,
+    "corr_length": correlation_length,
+    "corr_function": correlation_function
+}
 
 file_dir = pathlib.Path(__file__).parent
 

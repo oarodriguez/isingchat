@@ -10,7 +10,7 @@ system:
 
     temperature:
       min: 1
-      max: 3
+      max: 5
       num_samples: 256
 
     magnetic_field: 0

@@ -46,7 +46,7 @@ __pycache__/
 Config/
 #Notebooks/
 Lib/
-#data/
+data/
 #graphs/
 share/
 etc/

@@ -1,10 +1,10 @@
 """Collection of routines used to study the Ising chain."""
-
+import math
 import typing as t
 from dataclasses import dataclass
 from functools import partial
-from math import log
 
+from math import log
 import numpy as np
 import scipy
 from dask import bag
@@ -12,6 +12,7 @@ from numba import njit
 from scipy.linalg import eigvals
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigs as sparse_eigs
+from numpy.linalg import matrix_power
 
 from .exec_ import ParamsGrid
 from .utils import (
@@ -117,7 +118,7 @@ def _csr_log_transfer_matrix_parts(
     num_rows, num_neighbors = spin_proj_table.shape
     # Use lists, since we do not know a priori how many nonzero elements
     # the transfer matrix has.
-    _nnz_elems = []
+    _nnz_elements = []
     _nnz_rows = []
     _nnz_cols = []
 
@@ -142,14 +143,14 @@ def _csr_log_transfer_matrix_parts(
                 w_elem += hop_param * proj_one * proj_two / temp
 
             # Store the matrix element.
-            _nnz_elems.append(w_elem)
+            _nnz_elements.append(w_elem)
             _nnz_rows.append(idx)
             _nnz_cols.append(jdx)
 
-    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
+    nnz_elements = np.asarray(_nnz_elements, dtype=np.float64)
     nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
     nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
-    return nnz_elems, nnz_rows, nnz_cols
+    return nnz_elements, nnz_rows, nnz_cols
 
 
 @njit(cache=True)
@@ -162,7 +163,7 @@ def _csr_log_transfer_matrix_parts_fast(
     """
     # Use lists, since we do not know a priori how many nonzero elements
     # the transfer matrix has.
-    _nnz_elems = []
+    _nnz_elements = []
     _nnz_rows = []
     _nnz_cols = []
 
@@ -180,14 +181,15 @@ def _csr_log_transfer_matrix_parts_fast(
             proj_two = compat_proj[edx]
             w_elem += hop_param * proj_one * proj_two / temp
 
-        _nnz_elems.append(w_elem)
+        _nnz_elements.append(w_elem)
         _nnz_rows.append(ref_index)
         _nnz_cols.append(compat_index)
 
-    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
+    nnz_elements = np.asarray(_nnz_elements, dtype=np.float64)
     nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
     nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
-    return nnz_elems, nnz_rows, nnz_cols
+    return nnz_elements, nnz_rows, nnz_cols
+
 
 @njit(cache=True)
 def _centrosym_log_transfer_matrix_parts_fast(
@@ -198,50 +200,51 @@ def _centrosym_log_transfer_matrix_parts_fast(
 
     We use numba to accelerate the calculations.
     """
-    matrix_size = 2 ** (num_neighbors-1) # for centrosymetric matrix just need a half
-    _nnz_elems = []
-    # for centrosymetric matrix we need to calculate just an a half or matrix
+    matrix_size = 2 ** (
+        num_neighbors - 1)  # for centrosymmetric matrix just need a half
+    _nnz_elements = []
+    # for centrosymmetric matrix we need to calculate just an a half or matrix
     _nnz_rows = []
     _nnz_cols = []
-    for index in range(int(matrix_size/2)):
-        # from top to botton
+    for index in range(int(matrix_size / 2)):
+        # from top to bottom
         # top_bin = bin_digits(index, num_neighbors-1)
-        top_bin = get_bit_list(index,num_neighbors-1)
+        top_bin = get_bit_list(index, num_neighbors - 1)
         top_w_elem = 0
-        for ind_2,bin_dig in enumerate(top_bin):
+        for ind_2, bin_dig in enumerate(top_bin):
             if bin_dig == 0:
                 top_w_elem += interactions[ind_2]
             else:
                 top_w_elem += -interactions[ind_2]
         # first
-        _nnz_elems.append((top_w_elem + interactions[-1]) / temp)
+        _nnz_elements.append((top_w_elem + interactions[-1]) / temp)
         _nnz_rows.append(index)
-        _nnz_cols.append(2*index)
+        _nnz_cols.append(2 * index)
         # second
-        _nnz_elems.append((top_w_elem - interactions[-1]) / temp)
+        _nnz_elements.append((top_w_elem - interactions[-1]) / temp)
         _nnz_rows.append(index)
-        _nnz_cols.append(2*index + 1)
-        # from botton to top
-        # botton_bin = bin_digits(matrix_size-1-index, num_neighbors - 1)
-        botton_bin = get_bit_list(matrix_size-1-index, num_neighbors - 1)
-        botton_w_elem = 0
-        for ind_2,bin_dig in enumerate(botton_bin):
+        _nnz_cols.append(2 * index + 1)
+        # from bottom to top
+        # bottom_bin = bin_digits(matrix_size-1-index, num_neighbors - 1)
+        bottom_bin = get_bit_list(matrix_size - 1 - index, num_neighbors - 1)
+        bottom_w_elem = 0
+        for ind_2, bin_dig in enumerate(bottom_bin):
             if bin_dig == 0:
-                botton_w_elem += interactions[ind_2]
+                bottom_w_elem += interactions[ind_2]
             else:
-                botton_w_elem += -interactions[ind_2]
-        _nnz_elems.append((botton_w_elem - interactions[-1]) / temp)
-        _nnz_rows.append(matrix_size-1-index)
-        _nnz_cols.append(2*index)
+                bottom_w_elem += -interactions[ind_2]
+        _nnz_elements.append((bottom_w_elem - interactions[-1]) / temp)
+        _nnz_rows.append(matrix_size - 1 - index)
+        _nnz_cols.append(2 * index)
         # second column
-        _nnz_elems.append((botton_w_elem + interactions[-1]) / temp)
-        _nnz_rows.append(matrix_size-1-index)
-        _nnz_cols.append(2*index+1)
+        _nnz_elements.append((bottom_w_elem + interactions[-1]) / temp)
+        _nnz_rows.append(matrix_size - 1 - index)
+        _nnz_cols.append(2 * index + 1)
 
-    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
+    nnz_elements = np.asarray(_nnz_elements, dtype=np.float64)
     nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
     nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
-    return nnz_elems, nnz_rows, nnz_cols
+    return nnz_elements, nnz_rows, nnz_cols
 
 
 def _csr_finite_log_transfer_matrix_parts_fast(
@@ -251,7 +254,7 @@ def _csr_finite_log_transfer_matrix_parts_fast(
 
     We use numba to accelerate the calculations.
     """
-    _nnz_elems = []
+    _nnz_elements = []
     _nnz_rows = list(range(2 ** num_neighbors))
     _nnz_cols = []
     for row in _nnz_rows:
@@ -271,12 +274,12 @@ def _csr_finite_log_transfer_matrix_parts_fast(
             else:
                 proj_two = ref_proj[0]
             w_elem += hop_param * proj_one * proj_two / temp
-        _nnz_elems.append(w_elem)
+        _nnz_elements.append(w_elem)
 
-    nnz_elems = np.asarray(_nnz_elems, dtype=np.float64)
+    nnz_elements = np.asarray(_nnz_elements, dtype=np.float64)
     nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
     nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
-    return nnz_elems, nnz_rows, nnz_cols
+    return nnz_elements, nnz_rows, nnz_cols
 
 
 def norm_sparse_log_transfer_matrix(
@@ -287,15 +290,15 @@ def norm_sparse_log_transfer_matrix(
 ):
     """Calculate the (sparse) normalized transfer matrix."""
     num_rows, _ = spin_proj_table.shape
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts(
         temp, mag_field, interactions, spin_proj_table
     )
 
     # Normalize matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
     w_shape = (num_rows, num_rows)
-    return csr_matrix((nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape)
+    return csr_matrix((nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape)
 
 
 def norm_sparse_log_transfer_matrix_fast(
@@ -305,16 +308,16 @@ def norm_sparse_log_transfer_matrix_fast(
     num_neighbors: int,
 ):
     """Calculate the (sparse) normalized transfer matrix."""
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions, num_neighbors
     )
 
     # Normalize matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
-    return csr_matrix((nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape)
+    return csr_matrix((nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape)
 
 
 def energy_finite_chain_fast(
@@ -325,44 +328,43 @@ def energy_finite_chain_fast(
     num_tm_eigvals: int = None,
 ):
     """Calculate the Helmholtz free energy for a finite chain."""
-    nnz_elems, nnz_rows, nnz_cols = _csr_finite_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_finite_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
-    # Strictly, we should calculate all the eigenvalues and calculate the
+    # Strictly, we should calculate all the eigvals and calculate the
     # Free energy according to F. A, Kassan-ogly (2001),
     #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
     w_norm_eigvals: np.ndarray = eigvals(w_matrix.todense())
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
-    max_eigval_norm_idx = eigvals_norms.argmax()
-    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
-    reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    max_eigenvalue_norm_idx = eigvals_norms.argmax()
+    max_eigenvalue_norm = eigvals_norms[max_eigenvalue_norm_idx]
+    reduced_eigvals = w_norm_eigvals / max_eigenvalue_norm
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
     # print(
     #     "reduced_eigvals: {}".format(
-    #         np.log(reduced_eigvals_contrib.real) / num_neighbors
+    #         log(reduced_eigvals_contrib.real) / num_neighbors
     #     )
     # )
     # print("\n")
     helm_free_erg = -temp * (
         max_w_log_elem
-        + np.log(max_eigval_norm)
-        + np.log(reduced_eigvals_contrib.real) / num_neighbors
+        + log(max_eigenvalue_norm)
+        + log(reduced_eigvals_contrib.real) / num_neighbors
     )
     return helm_free_erg
 
 
-# TODO: check that this function reduce to the regular one
 def energy_imperfect_finite_chain_fast(
     temp: float,
     mag_field: float,
@@ -371,49 +373,64 @@ def energy_imperfect_finite_chain_fast(
     num_neighbors: int,
     num_tm_eigvals: int = None,
 ):
-    """Calculate Helmholtz free energy for a chain with two imperfections."""
+    """Calculate Helmholtz free energy for a chain with two transfer matrix.
+    This two transfer matrix represent one unit-cell of two spins.
+    Args:
+        :param temp (float): Temperature of the system (T)
+        :param mag_field (float): External magnetic field (h)
+        :param interactions_1 (np.ndarray): List of interaction for the first
+        spin in the unit-cell
+        :param interactions_2 (np.ndarray): List of interaction for the second
+        spin in the unit-cell
+        :param num_neighbors (int): Number of nearest neighboirs of interaction (nv)
+        :param num_tm_eigvals (int): Number of eigenvals for transfer matrix
+        to use for calculate the Free Helmholtz energy
+
+    Return:
+        :return helm_free_erg (float): free helmholtz energy of the chain
+    """
     # First matrix
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions_1, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem_1 = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem_1
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem_1 = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem_1
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix_1 = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     # Second matrix
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions_2, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem_2 = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem_2
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem_2 = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem_2
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix_2 = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     w_matrix = w_matrix_1 * w_matrix_2
-    # Strictly, we should calculate all the eigenvalues and calculate the
+    # Strictly, we should calculate all the eigvals and calculate the
     # Free energy according to F. A, Kassan-ogly (2001),
     #   https://www.tandfonline.com/doi/abs/10.1080/0141159010822758.
     # However, in practice, the contribution of the second largest and
-    # subsequent eigenvalues to the partition function decreases fast, so it
-    # is sufficient to calculate only a few of the largest eigenvalues.
+    # subsequent eigvals to the partition function decreases fast, so it
+    # is sufficient to calculate only a few of the largest eigvals.
     if num_tm_eigvals is None:
         num_eigvals = min(num_neighbors ** 2, num_rows - 2)
     else:
         num_eigvals = min(num_tm_eigvals, num_rows - 2)
-    # For three or two interactions we take all eigenvalues
+    # For three or two interactions we take all eigvals
     if len(interactions_1) <= 3:
         w_matrix_dense = w_matrix.todense()
         w_all_norm_eigvals: np.ndarray = scipy.linalg.eig(w_matrix_dense)
@@ -422,18 +439,18 @@ def energy_imperfect_finite_chain_fast(
         w_norm_eigvals: np.ndarray = sparse_eigs(
             w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
         )
-    sparse_eigs()
+    # sparse_eigs()
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
-    max_eigval_norm_idx = eigvals_norms.argmax()
-    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
-    reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    max_eigenvalue_norm_idx = eigvals_norms.argmax()
+    max_eigenvalue_norm = eigvals_norms[max_eigenvalue_norm_idx]
+    reduced_eigvals = w_norm_eigvals / max_eigenvalue_norm
     reduced_eigvals_contrib = np.sum(reduced_eigvals ** (num_neighbors))
-    cellunit = 2
-    helm_free_erg = -(temp / cellunit) * (
+    cell_unit = 2
+    helm_free_erg = -(temp / cell_unit) * (
         max_w_log_elem_1
         + max_w_log_elem_2
-        + np.log(max_eigval_norm)
-        + np.log(reduced_eigvals_contrib.real) / num_neighbors
+        + log(max_eigenvalue_norm)
+        + log(reduced_eigvals_contrib.real) / num_neighbors
     )
     return helm_free_erg
 
@@ -466,18 +483,18 @@ def energy_thermo_limit(
 ):
     """Calculate the Helmholtz free energy of the system."""
     num_rows, _ = spin_proj_table.shape
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts(
         temp, mag_field, interactions, spin_proj_table
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     w_shape = (num_rows, num_rows)
     w_matrix = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     # Evaluate the largest eigenvalue, since it defines the free energy in
     # the thermodynamic limit.
@@ -495,19 +512,19 @@ def energy_thermo_limit_fast(
     num_neighbors: int,
 ):
     """Calculate the Helmholtz free energy of the system."""
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     # Evaluate the largest eigenvalue only.
     num_eigvals = 1
@@ -522,18 +539,18 @@ def energy_thermo_limit_fast(
     # print(w_norm_eigvals)
     # print('matrix: ')
     # print(w_matrix)
-    max_eigvals = w_norm_eigvals.real[0]
+    # max_eigvals = w_norm_eigvals.real[0]
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
-    max_eigval_norm_idx = eigvals_norms.argmax()
-    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
-    # reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    max_eigenvalue_norm_idx = eigvals_norms.argmax()
+    max_eigenvalue_norm = eigvals_norms[max_eigenvalue_norm_idx]
+    # reduced_eigvals = w_norm_eigvals / max_eigenvalue_norm
     # In the thermodynamic limit, the number of spins is infinity.
     # Accordingly, only the largest reduced eigenvalue contributes.
     reduced_eigvals_contrib = 1.0
     helm_free_erg_tl = -temp * (
         max_w_log_elem
-        + log(max_eigval_norm)
-        + np.log(reduced_eigvals_contrib.real)
+        + log(max_eigenvalue_norm)
+        + log(reduced_eigvals_contrib.real)
     )
     return helm_free_erg_tl
 
@@ -545,19 +562,19 @@ def energy_thermo_limit_fast_centro(
 ):
     """Calculate the Helmholtz free energy of the system using the centrosymmetric
     property. Note that this is true just for h=0"""
-    nnz_elems, nnz_rows, nnz_cols = _centrosym_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _centrosym_log_transfer_matrix_parts_fast(
         temp, interactions, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
-    num_rows = 2 ** (num_neighbors-1)
+    num_rows = 2 ** (num_neighbors - 1)
     w_shape = (num_rows, num_rows)
     w_matrix = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     # Evaluate the largest eigenvalue only.
     num_eigvals = 1
@@ -573,18 +590,19 @@ def energy_thermo_limit_fast_centro(
     # print('matrix: ')
     # print(w_matrix)
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
-    max_eigval_norm_idx = eigvals_norms.argmax()
-    max_eigval_norm = eigvals_norms[max_eigval_norm_idx]
-    # reduced_eigvals = w_norm_eigvals / max_eigval_norm
+    max_eigenvalue_norm_idx = eigvals_norms.argmax()
+    max_eigenvalue_norm = eigvals_norms[max_eigenvalue_norm_idx]
+    # reduced_eigvals = w_norm_eigvals / max_eigenvalue_norm
     # In the thermodynamic limit, the number of spins is infinity.
     # Accordingly, only the largest reduced eigenvalue contributes.
     reduced_eigvals_contrib = 1.0
     helm_free_erg_tl = -temp * (
         max_w_log_elem
-        + log(max_eigval_norm)
-        + np.log(reduced_eigvals_contrib.real)
+        + log(max_eigenvalue_norm)
+        + log(reduced_eigvals_contrib.real)
     )
     return helm_free_erg_tl
+
 
 def energy_imperfect_thermo_limit_fast(
     temp: float,
@@ -594,34 +612,34 @@ def energy_imperfect_thermo_limit_fast(
     num_neighbors: int,
 ):
     """Calculate the Helmholtz free energy of the system."""
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem_1 = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem_1
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem_1 = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem_1
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix_1 = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     # Second matrix
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions_2, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem_2 = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem_2
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem_2 = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem_2
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix_2 = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     w_matrix = w_matrix_1 * w_matrix_2
     # Evaluate the largest eigenvalue only.
@@ -631,12 +649,12 @@ def energy_imperfect_thermo_limit_fast(
     w_norm_eigvals = sparse_eigs(
         w_matrix, k=num_eigvals, which="LM", return_eigenvectors=False
     )
-    max_eigval = w_norm_eigvals.real[0]
+    max_eigenvalue = w_norm_eigvals.real[0]
     # In the thermodynamic limit, the number of spins is infinity.
     # Accordingly, only the largest reduced eigenvalue contributes.
-    cellunit = 2
-    helm_free_erg_tl = -(temp / cellunit) * (
-        max_w_log_elem_1 + max_w_log_elem_2 + log(max_eigval)
+    cell_unit = 2
+    helm_free_erg_tl = -(temp / cell_unit) * (
+        max_w_log_elem_1 + max_w_log_elem_2 + log(max_eigenvalue)
     )
     return helm_free_erg_tl
 
@@ -648,19 +666,19 @@ def free_energy_fast(
     num_neighbors: int,
 ):
     """Calculate the Helmholtz free energy of the system."""
-    nnz_elems, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
         temp, mag_field, interactions, num_neighbors
     )
 
     # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elems)
-    nnz_elems -= max_w_log_elem
-    norm_nnz_elems = np.exp(nnz_elems)
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
+    norm_nnz_elements = np.exp(nnz_elements)
     # Construct the sparse matrix.
     num_rows = 2 ** num_neighbors
     w_shape = (num_rows, num_rows)
     w_matrix = csr_matrix(
-        (norm_nnz_elems, (nnz_rows, nnz_cols)), shape=w_shape
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
     )
     # Evaluate the largest eigenvalue, since it defines the free energy in
     # the thermodynamic limit.
@@ -678,6 +696,7 @@ def grid_func_base(
     finite_chain: bool = False,
     num_tm_eigvals: int = None,
     is_centrosymmetric: bool = False,
+    get_eigenvalues: bool = False
 ):
     """Calculate the spin chain properties over a parameter grid."""
     temperature, magnetic_field = params
@@ -722,6 +741,177 @@ def grid_func_base(
     )
 
 
+def grid_func_base_eigenvalues(
+    params: t.Tuple[float, float],
+    interactions: np.ndarray,
+    interactions_2: np.ndarray = None,
+    finite_chain: bool = False,
+    num_tm_eigvals: int = None,
+    is_centrosymmetric: bool = False,
+):
+    """
+    Calculate the transfer matrix eigenvalues of a spin chain
+    over a parameter grid.
+    """
+    temperature, magnetic_field = params
+    # if is_centrosymmetric:
+    #     # TODO put here the eigenvalues calculations using centrosymmetric
+    #     # property
+    #     return centrosym_eigens_tm_tl(
+    #         temperature,
+    #         interactions=interactions,
+    #         num_neighbors=num_neighbors,
+    #     )
+    # if interactions_2 is not None:
+    #     # TODO put here the eigenvalues calculations for imperfect chains
+    #     if finite_chain:
+    #         return eigens_tm_imperfect_finite_chain_fast(
+    #             temperature,
+    #             magnetic_field,
+    #             interactions_1=interactions,
+    #             interactions_2=interactions_2,
+    #             num_neighbors=num_neighbors,
+    #             num_tm_eigvals=num_tm_eigvals,
+    #         )
+    #     else:
+    #         return eigens_tm_imperfect_thermo_limit_fast(
+    #             temperature,
+    #             magnetic_field,
+    #             interactions=interactions,
+    #             interactions_2=interactions_2,
+    #             num_neighbors=num_neighbors,
+    #         )
+    # if finite_chain:
+    #     # TODO put here the transfer matrix eigenvalues for finite chains
+    #     return eigens_tm_finite_chain_fast(
+    #         temperature,
+    #         magnetic_field,
+    #         interactions=interactions,
+    #         num_neighbors=num_neighbors,
+    #         num_tm_eigvals=num_tm_eigvals,
+    #     )
+    return eigens_tm_tl(
+        temperature,
+        magnetic_field,
+        interactions=interactions,
+        num_tm_eigvals=num_tm_eigvals,
+    )
+
+
+def grid_func_base_cor_length_tl(
+    params: t.Tuple[float, float],
+    interactions: np.ndarray,
+    interactions_2: np.ndarray = None,
+    finite_chain: bool = False,
+    num_tm_eigvals: int = None,
+    is_centrosymmetric: bool = False,
+):
+    """
+    Calculate the transfer matrix eigenvalues of a spin chain
+    over a parameter grid.
+    """
+    temperature, magnetic_field = params
+    # if is_centrosymmetric:
+    #     # TODO put here the eigenvalues calculations using centrosymmetric
+    #     # property
+    #     return centrosym_eigens_tm_tl(
+    #         temperature,
+    #         interactions=interactions,
+    #         num_neighbors=num_neighbors,
+    #     )
+    # if interactions_2 is not None:
+    #     # TODO put here the eigenvalues calculations for imperfect chains
+    #     if finite_chain:
+    #         return eigens_tm_imperfect_finite_chain_fast(
+    #             temperature,
+    #             magnetic_field,
+    #             interactions_1=interactions,
+    #             interactions_2=interactions_2,
+    #             num_neighbors=num_neighbors,
+    #             num_tm_eigvals=num_tm_eigvals,
+    #         )
+    #     else:
+    #         return eigens_tm_imperfect_thermo_limit_fast(
+    #             temperature,
+    #             magnetic_field,
+    #             interactions=interactions,
+    #             interactions_2=interactions_2,
+    #             num_neighbors=num_neighbors,
+    #         )
+    # if finite_chain:
+    #     # TODO put here the transfer matrix eigenvalues for finite chains
+    #     return eigens_tm_finite_chain_fast(
+    #         temperature,
+    #         magnetic_field,
+    #         interactions=interactions,
+    #         num_neighbors=num_neighbors,
+    #         num_tm_eigvals=num_tm_eigvals,
+    #     )
+    return correlation_length_limit(
+        temperature,
+        magnetic_field,
+        interactions=interactions
+    )
+
+
+def grid_func_base_cor_func(
+    params: t.Tuple[float, float, float],
+    interactions: np.ndarray,
+    interactions_2: np.ndarray = None,
+    finite_chain: bool = False,
+    num_tm_eigvals: int = None,
+    is_centrosymmetric: bool = False,
+):
+    """
+    Calculate the transfer matrix eigenvalues of a spin chain
+    over a parameter grid.
+    """
+    spin_spin_dist, temperature, magnetic_field = params
+    # if is_centrosymmetric:
+    #     # TODO put here the eigenvalues calculations using centrosymmetric
+    #     # property
+    #     return centrosym_eigens_tm_tl(
+    #         temperature,
+    #         interactions=interactions,
+    #         num_neighbors=num_neighbors,
+    #     )
+    # if interactions_2 is not None:
+    #     # TODO put here the eigenvalues calculations for imperfect chains
+    #     if finite_chain:
+    #         return eigens_tm_imperfect_finite_chain_fast(
+    #             temperature,
+    #             magnetic_field,
+    #             interactions_1=interactions,
+    #             interactions_2=interactions_2,
+    #             num_neighbors=num_neighbors,
+    #             num_tm_eigvals=num_tm_eigvals,
+    #         )
+    #     else:
+    #         return eigens_tm_imperfect_thermo_limit_fast(
+    #             temperature,
+    #             magnetic_field,
+    #             interactions=interactions,
+    #             interactions_2=interactions_2,
+    #             num_neighbors=num_neighbors,
+    #         )
+    # if finite_chain:
+    #     # TODO put here the transfer matrix eigenvalues for finite chains
+    #     return eigens_tm_finite_chain_fast(
+    #         temperature,
+    #         magnetic_field,
+    #         interactions=interactions,
+    #         num_neighbors=num_neighbors,
+    #         num_tm_eigvals=num_tm_eigvals,
+    #     )
+    return correlation_function_tl(
+        spin_spin_dist,
+        temperature,
+        magnetic_field,
+        interactions,
+        num_tm_eigvals
+    )
+
+
 def eval_energy(
     params_grid: ParamsGrid,
     interactions: np.ndarray,
@@ -750,3 +940,228 @@ def eval_energy(
         compute_kwargs["num_workers"] = num_workers
     chi_square_data = params_bag.map(grid_func).compute(**compute_kwargs)
     return chi_square_data
+
+# -----------------------------------------------------------------------------
+# Spin-spin correlation function and correlation length calculus
+# -----------------------------------------------------------------------------
+def z_projection_gen(
+    n: int,
+    side: str = 'right'
+):
+    """
+    Return Right or left tensor product of Pauli sigma_z matrix with identity n times
+    :param n (int) Required.
+        Number of times for the tensor product
+    :param side (str) Optional. Default 'right'. Could be 'right' or 'left'
+        Right or left tensor product extension of Pauli sigma_z matrix
+    :return: sigma_z (scipy.sparse.csr.csr_matrix)
+    """
+    sigma_z: scipy.sparse.csr.csr_matrix
+    sigma_z = csr_matrix(
+        [[1, 0],
+         [0, -1]]
+    )
+    _identity = scipy.sparse.identity(2)
+
+    if side == 'right':
+        for i in range(n):
+            sigma_z = scipy.sparse.kron(sigma_z, _identity)
+    elif side == 'left':
+        for i in range(n):
+            sigma_z = scipy.sparse.kron(_identity, sigma_z)
+    else:
+        print('side {} is not support. Please use "right" or "left" instead')
+
+    return sigma_z
+
+
+# TODO: make the function to multiply matrix and obtain the correlation function
+def correlation_function_finite_chain_matrix_mult(
+    r: int,
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray
+):
+    num_neighbors = len(interactions)
+    num_spins = num_neighbors  # size of the chain is the same of the int range
+
+    nnz_elements, nnz_rows, nnz_cols = _csr_finite_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    norm_nnz_elements = np.exp(nnz_elements)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix = csr_matrix(
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    w_norm_eigvals, _ = sparse_eigs(w_matrix, k=1, which="LM")
+    z_function = np.sum(w_norm_eigvals)
+    pauli_z_gen = z_projection_gen(num_neighbors - 1)
+    # Make the matrix multiplication
+    result = pauli_z_gen.dot(matrix_power(w_matrix.todense(), r)).dot(
+        pauli_z_gen.dot(matrix_power(w_matrix.todense(), num_spins - r)))
+
+    # Return correlation function
+    return result.trace().max() / z_function
+
+
+def eigens_tm_tl(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    num_tm_eigvals: int = None
+):
+    """
+        Return max_w_log_elem and eigenvectors of the transfer matrix of the infinite chain
+        In case of len(interactions) > 3, the default num eigvals returned is min(num_neighbors ** 2, num_rows - 2)
+    """
+    num_neighbors = len(interactions)
+    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+        temp, mag_field, interactions, num_neighbors
+    )
+
+    # Normalize nonzero matrix elements.
+    max_w_log_elem = np.max(nnz_elements)
+    nnz_elements -= max_w_log_elem
+    norm_nnz_elements = np.exp(nnz_elements)
+    # Construct the sparse matrix.
+    num_rows = 2 ** num_neighbors
+    w_shape = (num_rows, num_rows)
+    w_matrix = csr_matrix(
+        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
+    )
+    # Check num_tm_eigvals in order to use eigs sparse routine or dense
+    # sparse routine
+    if num_tm_eigvals is None:
+        num_eigvals = min(num_neighbors ** 2,
+                              num_rows - 2)  # Default num_eigvals
+    else:
+        num_eigvals = num_tm_eigvals
+    if num_eigvals > num_rows - 2:
+        w_matrix_dense = w_matrix.todense()
+        # w_all_norm_eigvals, w_all_norm_eigvect = scipy.linalg.eig(w_matrix_dense)
+        # w_norm_eigvals = w_all_norm_eigvals[0]
+        w_norm_eigvals, w_norm_eigvect = scipy.linalg.eig(w_matrix_dense)
+        if num_eigvals > num_rows:
+            print(
+                'Warning: The number of eigvals can not be greater than '
+                'num of the rows. We calculate all eigvals')
+
+            # return all eigvals
+            return max_w_log_elem, w_norm_eigvals, w_norm_eigvect
+        else:
+            return max_w_log_elem, \
+                   w_norm_eigvals[:num_eigvals], \
+                   w_norm_eigvect[:, :num_eigvals]
+    else:
+        w_norm_eigvals, w_norm_eigvect = sparse_eigs(
+            w_matrix, k=num_eigvals, which="LM"
+        )
+
+        return max_w_log_elem, w_norm_eigvals, w_norm_eigvect
+
+
+def correlation_function_tl(
+    r: int,
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    num_tm_eigvals: int = None
+):
+    num_neighbors = len(interactions)
+    if num_tm_eigvals is None:
+        num_tm_eigvals = 2 ** num_neighbors  # all eigvals
+
+    _, w_norm_eigvals, w_norm_eigvects = eigens_tm_tl(temp, mag_field,
+                                                          interactions,
+                                                          num_tm_eigvals)
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
+    max_eigenvalue_norm_idx = eigvals_norms.argmax()
+    max_eigenvalue_norm = eigvals_norms[max_eigenvalue_norm_idx]
+    max_eigvect_norm = w_norm_eigvects[:, max_eigenvalue_norm_idx]
+    reduced_eigvals = (w_norm_eigvals / max_eigenvalue_norm) ** r
+    sigma_z = z_projection_gen(num_neighbors - 1)  # matrix extension
+    corr_function = 0
+    for ind_eig in range(len(reduced_eigvals)):
+        if ind_eig == max_eigenvalue_norm_idx:
+            pass
+        else:
+            corr_function += (reduced_eigvals[ind_eig]) * (
+                np.abs(max_eigvect_norm.dot(
+                    sigma_z.dot(w_norm_eigvects[:, ind_eig]))) ** 2
+            )
+
+    return corr_function
+
+
+def correlation_length_limit(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray
+):
+    _, w_norm_eigvals, _ = eigens_tm_tl(temp, mag_field, interactions, 2)
+    eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
+    eigvals_norms[::-1].sort()
+
+    return abs(math.log(eigvals_norms[0] / eigvals_norms[1]))
+
+
+@njit(cache=True)
+def _finite_transfer_matrix_parts_fast(
+    temp: float,
+    mag_field: float,
+    interactions: np.ndarray,
+    num_neighbors: int
+):
+    """ Calculate the parts of the sparse transfer matrix
+    property. Note this method is used just for h=0
+
+    We use numba to accelerate the calculations.
+    """
+    matrix_size = 2 ** num_neighbors
+    _nnz_elements = []
+    # we need to calculate just two values per row
+    _nnz_rows = []
+    _nnz_cols = []
+    for index in range(int(matrix_size / 2)):
+        # from top to bottom
+        # top_bin = bin_digits(index, num_neighbors-1)
+        top_bin = get_bit_list(index, num_neighbors)
+        top_w_elem = mag_field
+        for ind_2, bin_dig in enumerate(top_bin):
+            if bin_dig == 0:
+                top_w_elem += interactions[ind_2]
+            else:
+                top_w_elem += -interactions[ind_2]
+        # first
+        _nnz_elements.append((top_w_elem + interactions[-1]) / temp)
+        _nnz_rows.append(index)
+        _nnz_cols.append(2 * index)
+        # second
+        _nnz_elements.append((top_w_elem - interactions[-1]) / temp)
+        _nnz_rows.append(index)
+        _nnz_cols.append(2 * index + 1)
+        # from bottom to top
+        # bottom_bin = bin_digits(matrix_size-1-index, num_neighbors - 1)
+        bottom_bin = get_bit_list(matrix_size - 1 - index, num_neighbors - 1)
+        bottom_w_elem = 0
+        for ind_2, bin_dig in enumerate(bottom_bin):
+            if bin_dig == 0:
+                bottom_w_elem += interactions[ind_2]
+            else:
+                bottom_w_elem += -interactions[ind_2]
+        _nnz_elements.append((bottom_w_elem - interactions[-1]) / temp)
+        _nnz_rows.append(matrix_size - 1 - index)
+        _nnz_cols.append(2 * index)
+        # second column
+        _nnz_elements.append((bottom_w_elem + interactions[-1]) / temp)
+        _nnz_rows.append(matrix_size - 1 - index)
+        _nnz_cols.append(2 * index + 1)
+
+    nnz_elements = np.asarray(_nnz_elements, dtype=np.float64)
+    nnz_rows = np.asarray(_nnz_rows, dtype=np.int32)
+    nnz_cols = np.asarray(_nnz_cols, dtype=np.int32)
+    return nnz_elements, nnz_rows, nnz_cols

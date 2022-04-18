@@ -2,6 +2,8 @@ import typing as t
 
 import h5py
 import numpy as np
+from isingchat.exec_ import ParamsGrid
+from rich.pretty import pprint
 from ruamel.yaml import YAML
 
 yaml = YAML()
@@ -61,6 +63,12 @@ def read_ising_config(config_data: dict):
     # Read the magnetic field.
     magnetic_field_config = hamiltonian_params["magnetic_field"]
     magnetic_field = read_param(magnetic_field_config)
+    # Read the spin_spin_dist
+    if hamiltonian_params.get('spin_spin_dist') is not None:
+        spin_spin_dist_config = hamiltonian_params["spin_spin_dist"]
+        spin_spin_dist = read_param(spin_spin_dist_config)
+    else:
+        spin_spin_dist = None
     # Execution data
     exec_config = config_data.get("exec", None)
     if exec_config is None:
@@ -76,6 +84,7 @@ def read_ising_config(config_data: dict):
             "magnetic_field": magnetic_field,
             "finite": finite_system,
             "num_tm_eigvals": num_tm_eigvals,
+            "spin_spin_dist": spin_spin_dist
         },
         "exec": exec_config,
         "metadata": metadata,
@@ -86,3 +95,23 @@ def read_ising_config(config_data: dict):
 def save_free_energy_data(energy: np.ndarray, h5_file: h5py.File):
     """Save the energy data into an HDF5 file."""
     h5_file.create_dataset("free-energy", data=energy)
+
+def save_eigen_data(data: list,params_grid: ParamsGrid, h5_file: h5py.File):
+    """Save the energy data into an HDF5 file."""
+    data_array = np.asarray(data, dtype=np.ndarray)
+    grid_shape = params_grid.shape
+    max_w_matrix_data = np.asarray(data_array[:,0],dtype=np.float64).reshape(grid_shape)
+    h5_group = h5_file.create_group("eigens")
+    h5_group.create_dataset("max-w-matrix", data=max_w_matrix_data)
+    eigenvalues_data = np.asarray(data_array[:,1],dtype=np.ndarray).reshape(grid_shape)
+    h5_group.create_dataset("eigenvalues",data=eigenvalues_data.tolist())
+    eigenvectors_data = np.asarray(data_array[:,2],dtype=np.ndarray).reshape(grid_shape)
+    h5_group.create_dataset("eigenvectors", data=eigenvectors_data.tolist())
+
+def save_cor_length_data(cor_length: np.ndarray, h5_file: h5py.File):
+    """Save the energy data into an HDF5 file."""
+    h5_file.create_dataset("correlation-length", data=cor_length)
+
+def save_cor_function_data(cor_function: np.ndarray, h5_file: h5py.File):
+    """Save the energy data into an HDF5 file."""
+    h5_file.create_dataset("correlation-function", data=cor_function)
