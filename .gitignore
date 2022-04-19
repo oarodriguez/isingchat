@@ -201,5 +201,5 @@ dmypy.json
 /media
 /outputs
 /mathematica
-
+/data
 credentials_git*
