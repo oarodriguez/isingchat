@@ -30,6 +30,7 @@ class ParamsGrid(Iterable):
                 self.magnetic_field[mag_field_idx],
             )
 
+
 @dataclass
 class ParamsGrid3D(Iterable):
     """"""

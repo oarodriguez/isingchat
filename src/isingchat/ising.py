@@ -805,6 +805,7 @@ def grid_func_base_cor_length_tl(
     finite_chain: bool = False,
     num_tm_eigvals: int = None,
     is_centrosymmetric: bool = False,
+    is_inv_temp: bool = False,
 ):
     """
     Calculate the transfer matrix eigenvalues of a spin chain
@@ -847,6 +848,13 @@ def grid_func_base_cor_length_tl(
     #         num_neighbors=num_neighbors,
     #         num_tm_eigvals=num_tm_eigvals,
     #     )
+    if is_inv_temp:
+        return correlation_length_limit(
+            1/temperature,
+            magnetic_field,
+            interactions=interactions
+        )
+
     return correlation_length_limit(
         temperature,
         magnetic_field,
@@ -920,7 +928,6 @@ def eval_energy(
     num_tm_eigvals: int = None,
     num_workers: int = None,
     is_centrosymmetric: bool = False
-
 ):
     """Calculate the energy over a parameter grid."""
     grid_func = partial(
@@ -1106,7 +1113,7 @@ def correlation_length_limit(
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     eigvals_norms[::-1].sort()
 
-    return abs(math.log(eigvals_norms[0] / eigvals_norms[1]))
+    return 1/abs(math.log(eigvals_norms[0] / eigvals_norms[1]))
 
 
 @njit(cache=True)

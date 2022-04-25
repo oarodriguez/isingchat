@@ -42,7 +42,8 @@ def correlation_length(config_path: str, force: bool):
     # Read the config data.
     config_data = read_ising_config(config_info)
     system_data = config_data["system"]
-    temperature = system_data["temperature"]
+    temperature = system_data.get("temperature",None)
+    inv_temperature = system_data.get("inv_temperature",None)
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
     interactions_2 = system_data.get("interactions_2",None)
@@ -52,6 +53,7 @@ def correlation_length(config_path: str, force: bool):
     exec_parallel = exec_config["parallel"]
     num_workers = exec_config.get("num_workers")
     use_centrosymmetric = config_data["use_centrosymmetric"]
+    is_inv_temp = config_data["is_inv_temp"]
 
     # CLI title message.
     title_text = Text(
@@ -82,8 +84,14 @@ def correlation_length(config_path: str, force: bool):
     console.print(title_panel)
     console.print(config_panel)
 
-    # Evaluate the cor_length over the parameters grid.
-    params_grid = ParamsGrid(temperature, magnetic_field)
+    if is_inv_temp:
+        params_grid = ParamsGrid(inv_temperature, magnetic_field)
+    else:
+        # Evaluate the cor_length over the parameters grid.
+        params_grid = ParamsGrid(temperature, magnetic_field)
+
+    print('params_grid: {}'.format(params_grid))
+
     if not exec_parallel:
         progress_bar = RichProgressBar(
             *columns, console=console, auto_refresh=False
@@ -99,7 +107,8 @@ def correlation_length(config_path: str, force: bool):
                 interactions_2=interactions_2,
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
-                is_centrosymmetric=use_centrosymmetric
+                is_centrosymmetric=use_centrosymmetric,
+                is_inv_temp=is_inv_temp
             )
             grid_map = map(grid_func, params_grid)
             for cor_length_value in grid_map:

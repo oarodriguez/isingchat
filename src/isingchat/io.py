@@ -3,7 +3,6 @@ import typing as t
 import h5py
 import numpy as np
 from isingchat.exec_ import ParamsGrid
-from rich.pretty import pprint
 from ruamel.yaml import YAML
 
 yaml = YAML()
@@ -58,8 +57,16 @@ def read_ising_config(config_data: dict):
     if interactions_2_config is not None:
         interactions_2 = read_param(interactions_2_config)
     # Read the temperature.
-    temp_config = hamiltonian_params["temperature"]
-    temperature = read_param(temp_config)
+    inv_temp_config = hamiltonian_params.get('inv_temperature', None)
+    if inv_temp_config is not None:
+        inv_temp = read_param(inv_temp_config)
+    else:
+        inv_temp = None
+    temp_config = hamiltonian_params.get("temperature",None)
+    if temp_config is not None:
+        temperature = read_param(temp_config)
+    else:
+        temperature = None
     # Read the magnetic field.
     magnetic_field_config = hamiltonian_params["magnetic_field"]
     magnetic_field = read_param(magnetic_field_config)
@@ -77,6 +84,8 @@ def read_ising_config(config_data: dict):
     metadata = config_data.get("metadata")
     # Use centroymmetric property
     use_centrosymmetric = config_data.get("use_centrosymmetric",None)
+    # Use inv_data_temp
+    is_inv_temp = config_data.get("is_inv_temp", None)
     return {
         "system": {
             "interactions": interactions,
@@ -84,11 +93,13 @@ def read_ising_config(config_data: dict):
             "magnetic_field": magnetic_field,
             "finite": finite_system,
             "num_tm_eigvals": num_tm_eigvals,
-            "spin_spin_dist": spin_spin_dist
+            "spin_spin_dist": spin_spin_dist,
+            "inv_temperature": inv_temp
         },
         "exec": exec_config,
         "metadata": metadata,
-        "use_centrosymmetric": use_centrosymmetric
+        "use_centrosymmetric": use_centrosymmetric,
+        "is_inv_temp": is_inv_temp
     }
 
 
