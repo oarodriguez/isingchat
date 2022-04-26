@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from functools import partial
 
 from math import log
+from pprint import pprint
+
 import numpy as np
 import scipy
 from dask import bag
@@ -195,8 +197,8 @@ def _csr_log_transfer_matrix_parts_fast(
 def _centrosym_log_transfer_matrix_parts_fast(
     temp: float, interactions: np.ndarray, num_neighbors: int
 ):
-    """Calculate the parts of the sparse transfer matrix using the centrosymmetric
-    property. Note this method is used just for h=0
+    """Calculate the parts of the A+JC sparse transfer matrix using the
+    centrosymmetric property. Note this method is used just for h=0
 
     We use numba to accelerate the calculations.
     """
@@ -754,14 +756,6 @@ def grid_func_base_eigenvalues(
     over a parameter grid.
     """
     temperature, magnetic_field = params
-    # if is_centrosymmetric:
-    #     # TODO put here the eigenvalues calculations using centrosymmetric
-    #     # property
-    #     return centrosym_eigens_tm_tl(
-    #         temperature,
-    #         interactions=interactions,
-    #         num_neighbors=num_neighbors,
-    #     )
     # if interactions_2 is not None:
     #     # TODO put here the eigenvalues calculations for imperfect chains
     #     if finite_chain:
@@ -795,6 +789,7 @@ def grid_func_base_eigenvalues(
         magnetic_field,
         interactions=interactions,
         num_tm_eigvals=num_tm_eigvals,
+        is_centrosymmetric=is_centrosymmetric
     )
 
 
@@ -850,15 +845,17 @@ def grid_func_base_cor_length_tl(
     #     )
     if is_inv_temp:
         return correlation_length_limit(
-            1/temperature,
+            1 / temperature,
             magnetic_field,
-            interactions=interactions
+            interactions=interactions,
+            is_centrosymmetric=is_centrosymmetric
         )
 
     return correlation_length_limit(
         temperature,
         magnetic_field,
-        interactions=interactions
+        interactions=interactions,
+        is_centrosymmetric=is_centrosymmetric
     )
 
 
@@ -948,6 +945,7 @@ def eval_energy(
     chi_square_data = params_bag.map(grid_func).compute(**compute_kwargs)
     return chi_square_data
 
+
 # -----------------------------------------------------------------------------
 # Spin-spin correlation function and correlation length calculus
 # -----------------------------------------------------------------------------
@@ -1019,56 +1017,137 @@ def eigens_tm_tl(
     temp: float,
     mag_field: float,
     interactions: np.ndarray,
-    num_tm_eigvals: int = None
+    num_tm_eigvals: int = None,
+    is_centrosymmetric: bool = False
 ):
     """
         Return max_w_log_elem and eigenvectors of the transfer matrix of the infinite chain
         In case of len(interactions) > 3, the default num eigvals returned is min(num_neighbors ** 2, num_rows - 2)
     """
     num_neighbors = len(interactions)
-    nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
-        temp, mag_field, interactions, num_neighbors
-    )
 
-    # Normalize nonzero matrix elements.
-    max_w_log_elem = np.max(nnz_elements)
-    nnz_elements -= max_w_log_elem
-    norm_nnz_elements = np.exp(nnz_elements)
-    # Construct the sparse matrix.
-    num_rows = 2 ** num_neighbors
-    w_shape = (num_rows, num_rows)
-    w_matrix = csr_matrix(
-        (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
-    )
-    # Check num_tm_eigvals in order to use eigs sparse routine or dense
-    # sparse routine
-    if num_tm_eigvals is None:
-        num_eigvals = min(num_neighbors ** 2,
-                              num_rows - 2)  # Default num_eigvals
-    else:
-        num_eigvals = num_tm_eigvals
-    if num_eigvals > num_rows - 2:
-        w_matrix_dense = w_matrix.todense()
-        # w_all_norm_eigvals, w_all_norm_eigvect = scipy.linalg.eig(w_matrix_dense)
-        # w_norm_eigvals = w_all_norm_eigvals[0]
-        w_norm_eigvals, w_norm_eigvect = scipy.linalg.eig(w_matrix_dense)
-        if num_eigvals > num_rows:
-            print(
-                'Warning: The number of eigvals can not be greater than '
-                'num of the rows. We calculate all eigvals')
+    if is_centrosymmetric:
+        nnz_elements, nnz_rows, nnz_cols = \
+            _centrosym_log_transfer_matrix_parts_fast(
+                temp, interactions, num_neighbors
+            )
+        num_rows = 2 ** (num_neighbors - 1)
+        # Construct the sparse matrix.
+        w_shape = (num_rows, num_rows)
 
-            # return all eigvals
-            return max_w_log_elem, w_norm_eigvals, w_norm_eigvect
-        else:
-            return max_w_log_elem, \
-                   w_norm_eigvals[:num_eigvals], \
-                   w_norm_eigvect[:, :num_eigvals]
-    else:
-        w_norm_eigvals, w_norm_eigvect = sparse_eigs(
-            w_matrix, k=num_eigvals, which="LM"
+        # Normalize nonzero matrix elements.
+        max_w_log_elem = np.max(nnz_elements)
+        nnz_elements -= max_w_log_elem
+        # For A+JC matrix
+        norm_nnz_elements = np.exp(nnz_elements)
+        w_matrix_plus = csr_matrix(
+            (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
         )
+        # For A-JC matrix
+        norm_nnx_elements_minus = np.concatenate(
+            (norm_nnz_elements[:int(len(norm_nnz_elements) / 2)],
+             -norm_nnz_elements[int(len(norm_nnz_elements) / 2):])
+        )
+        w_matrix_minus = csr_matrix(
+            (norm_nnx_elements_minus, (nnz_rows, nnz_cols)), shape=w_shape
+        )
+        # Check num_tm_eigvals in order to use eigs sparse routine or dense
+        # sparse routine
+        if num_tm_eigvals is None:
+            num_eigvals = int(min(num_neighbors ** 2,
+                              num_rows - 2))  # Default num_eigvals
+        else:
+            num_eigvals = int(num_tm_eigvals / 2)
 
-        return max_w_log_elem, w_norm_eigvals, w_norm_eigvect
+        if num_eigvals > num_rows - 2:
+            w_matrix_dense_plus = w_matrix_plus.todense()
+            w_norm_eigvals_plus, w_norm_eigvect_plus = scipy.linalg.eig(
+                w_matrix_dense_plus)
+
+            w_matrix_dense_minus = w_matrix_minus.todense()
+            w_norm_eigvals_minus, w_norm_eigvect_minus = scipy.linalg.eig(
+                w_matrix_dense_minus)
+
+            if num_eigvals > num_rows:
+                # return all eigvals
+                return \
+                    max_w_log_elem, \
+                    np.concatenate(
+                        (w_norm_eigvals_plus,
+                         w_norm_eigvals_minus)
+                    ), \
+                    np.concatenate(
+                        (w_norm_eigvect_plus, w_norm_eigvect_minus), axis=0)
+            else:
+                return \
+                    max_w_log_elem, \
+                    np.concatenate(
+                        (w_norm_eigvals_plus[:num_eigvals],
+                         w_norm_eigvals_minus[:num_eigvals])
+                    ),\
+                    np.concatenate(
+                        (w_norm_eigvect_plus[:, :num_eigvals],
+                         w_norm_eigvect_minus[:, :num_eigvals]),axis=0
+                    )
+        else:
+            w_norm_eigvals_plus, w_norm_eigvect_plus = sparse_eigs(
+                w_matrix_plus, k=num_eigvals, which="LM"
+            )
+            w_norm_eigvals_minus, w_norm_eigvect_minus = sparse_eigs(
+                w_matrix_minus, k=num_eigvals, which="LM"
+            )
+
+            return \
+                max_w_log_elem, \
+                np.concatenate(
+                    (w_norm_eigvals_plus, w_norm_eigvals_minus)
+                ), \
+                np.concatenate(
+                    (w_norm_eigvect_plus, w_norm_eigvect_minus),axis=0)
+    else:
+        nnz_elements, nnz_rows, nnz_cols = _csr_log_transfer_matrix_parts_fast(
+            temp, mag_field, interactions, num_neighbors
+        )
+        num_rows = 2 ** num_neighbors
+
+        # Normalize nonzero matrix elements.
+        max_w_log_elem = np.max(nnz_elements)
+        nnz_elements -= max_w_log_elem
+        norm_nnz_elements = np.exp(nnz_elements)
+        # Construct the sparse matrix.
+        w_shape = (num_rows, num_rows)
+        w_matrix = csr_matrix(
+            (norm_nnz_elements, (nnz_rows, nnz_cols)), shape=w_shape
+        )
+        # Check num_tm_eigvals in order to use eigs sparse routine or dense
+        # sparse routine
+        if num_tm_eigvals is None:
+            num_eigvals = min(num_neighbors ** 2,
+                              num_rows - 2)  # Default num_eigvals
+        else:
+            num_eigvals = num_tm_eigvals
+        if num_eigvals > num_rows - 2:
+            w_matrix_dense = w_matrix.todense()
+            # w_all_norm_eigvals, w_all_norm_eigvect = scipy.linalg.eig(w_matrix_dense)
+            # w_norm_eigvals = w_all_norm_eigvals[0]
+            w_norm_eigvals, w_norm_eigvect = scipy.linalg.eig(w_matrix_dense)
+            if num_eigvals > num_rows:
+                print(
+                    'Warning: The number of eigvals can not be greater than '
+                    'num of the rows. We calculate all eigvals')
+
+                # return all eigvals
+                return max_w_log_elem, w_norm_eigvals, w_norm_eigvect
+            else:
+                return max_w_log_elem, \
+                       w_norm_eigvals[:num_eigvals], \
+                       w_norm_eigvect[:, :num_eigvals]
+        else:
+            w_norm_eigvals, w_norm_eigvect = sparse_eigs(
+                w_matrix, k=num_eigvals, which="LM"
+            )
+
+            return max_w_log_elem, w_norm_eigvals, w_norm_eigvect
 
 
 def correlation_function_tl(
@@ -1083,8 +1162,8 @@ def correlation_function_tl(
         num_tm_eigvals = 2 ** num_neighbors  # all eigvals
 
     _, w_norm_eigvals, w_norm_eigvects = eigens_tm_tl(temp, mag_field,
-                                                          interactions,
-                                                          num_tm_eigvals)
+                                                      interactions,
+                                                      num_tm_eigvals)
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     max_eigenvalue_norm_idx = eigvals_norms.argmax()
     max_eigenvalue_norm = eigvals_norms[max_eigenvalue_norm_idx]
@@ -1107,13 +1186,18 @@ def correlation_function_tl(
 def correlation_length_limit(
     temp: float,
     mag_field: float,
-    interactions: np.ndarray
+    interactions: np.ndarray,
+    is_centrosymmetric: bool = False
 ):
-    _, w_norm_eigvals, _ = eigens_tm_tl(temp, mag_field, interactions, 2)
+    _, w_norm_eigvals, _ = eigens_tm_tl(temp,
+                                        mag_field,
+                                        interactions,
+                                        2,
+                                        is_centrosymmetric)
     eigvals_norms: np.ndarray = np.abs(w_norm_eigvals)
     eigvals_norms[::-1].sort()
 
-    return 1/abs(math.log(eigvals_norms[0] / eigvals_norms[1]))
+    return 1 / abs(math.log(eigvals_norms[0] / eigvals_norms[1]))
 
 
 @njit(cache=True)

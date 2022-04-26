@@ -43,6 +43,7 @@ def eigens(config_path: str, force: bool):
     config_data = read_ising_config(config_info)
     system_data = config_data["system"]
     temperature = system_data["temperature"]
+    inv_temperature = system_data.get("inv_temperature",None)
     magnetic_field = system_data["magnetic_field"]
     interactions = system_data["interactions"]
     interactions_2 = system_data.get("interactions_2",None)
@@ -81,9 +82,36 @@ def eigens(config_path: str, force: bool):
     # Display the title and the configuration summary.
     console.print(title_panel)
     console.print(config_panel)
+    if temperature is None and inv_temperature is None:
+        raise CLIError(
+            f"there is not temperature or inv_temperature grid defined in"
+            f"'{_eigens_data_path.name}' file"
+        )
+    elif temperature is None:
+        is_inv_temp = True
+    else:
+        is_inv_temp = False
 
-    # Evaluate the energy over the parameters grid.
-    params_grid = ParamsGrid(temperature, magnetic_field)
+    if use_centrosymmetric:
+        if magnetic_field != 0:
+            print("Warning: the magnetic_field is not zero and centrosymmetric"
+                  "and centrosymmetric property can use only with magnetic "
+                  "field equals zero.")
+        else:
+            print("Using centrosymmetric property")
+
+    if num_tm_eigvals > 2**len(interactions):
+        print(
+            'Warning: The number of eigvals can not be greater than'
+            'num of the 2**nv. We calculate all eigvals')
+
+    # Evaluate the cor_length over the parameters grid.
+    if is_inv_temp:
+        print('Using inverse temperature.')
+        params_grid = ParamsGrid(inv_temperature, magnetic_field)
+    else:
+        params_grid = ParamsGrid(temperature, magnetic_field)
+
     if not exec_parallel:
         progress_bar = RichProgressBar(
             *columns, console=console, auto_refresh=False

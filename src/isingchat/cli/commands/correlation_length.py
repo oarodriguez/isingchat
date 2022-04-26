@@ -53,7 +53,7 @@ def correlation_length(config_path: str, force: bool):
     exec_parallel = exec_config["parallel"]
     num_workers = exec_config.get("num_workers")
     use_centrosymmetric = config_data["use_centrosymmetric"]
-    is_inv_temp = config_data["is_inv_temp"]
+
 
     # CLI title message.
     title_text = Text(
@@ -84,13 +84,31 @@ def correlation_length(config_path: str, force: bool):
     console.print(title_panel)
     console.print(config_panel)
 
+    if temperature is None and inv_temperature is None:
+        raise CLIError(
+            f"there is not temperature or inv_temperature grid defined in"
+            f"'{_cor_length_data_path.name}' file"
+        )
+    elif temperature is None:
+        is_inv_temp = True
+    else:
+        is_inv_temp = False
+
     if is_inv_temp:
+        print('Using inverse temperature.')
         params_grid = ParamsGrid(inv_temperature, magnetic_field)
     else:
         # Evaluate the cor_length over the parameters grid.
         params_grid = ParamsGrid(temperature, magnetic_field)
+    if use_centrosymmetric:
+        if magnetic_field != 0:
+            print("Warning: the magnetic_field is not zero and centrosymmetric"
+                  "and centrosymmetric property can use only with magnetic "
+                  "field equals zero.")
+        else:
+            print("Using centrosymmetric property")
 
-    print('params_grid: {}'.format(params_grid))
+    # print('params_grid: {}'.format(params_grid))
 
     if not exec_parallel:
         progress_bar = RichProgressBar(
@@ -108,7 +126,7 @@ def correlation_length(config_path: str, force: bool):
                 finite_chain=finite_chain,
                 num_tm_eigvals=num_tm_eigvals,
                 is_centrosymmetric=use_centrosymmetric,
-                is_inv_temp=is_inv_temp
+                is_inv_temp=is_inv_temp,
             )
             grid_map = map(grid_func, params_grid)
             for cor_length_value in grid_map:

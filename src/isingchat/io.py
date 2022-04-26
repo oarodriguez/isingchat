@@ -84,8 +84,6 @@ def read_ising_config(config_data: dict):
     metadata = config_data.get("metadata")
     # Use centroymmetric property
     use_centrosymmetric = config_data.get("use_centrosymmetric",None)
-    # Use inv_data_temp
-    is_inv_temp = config_data.get("is_inv_temp", None)
     return {
         "system": {
             "interactions": interactions,
@@ -99,7 +97,6 @@ def read_ising_config(config_data: dict):
         "exec": exec_config,
         "metadata": metadata,
         "use_centrosymmetric": use_centrosymmetric,
-        "is_inv_temp": is_inv_temp
     }
 
 
