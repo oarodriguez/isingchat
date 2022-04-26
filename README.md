@@ -98,13 +98,14 @@ pip install conda-build
 ```
 Then, build the conda package running
 ```
-conda-build isingchat
+conda-build [[recipe_meta.yaml]]
 ```
 When conda-build is finished, it displays the package filename and location.
 Install your newly built program on your local computer by
 ```
-conda install --use-local isingchat
+conda install --use-local [[your_local_file.tar]]
 ```
+Note: run the conda build purge to delete a previous package version
 
 ## Organization
 The project is organized as follows
