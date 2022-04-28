@@ -105,7 +105,8 @@ Install your newly built program on your local computer by
 ```
 conda install --use-local [[your_local_file.tar]]
 ```
-Note: run the conda build purge to delete a previous package version
+Note: run the conda build purge to delete a previous package version 
+and git reset to resolve GIT_ENV_VARIABLES issues
 
 ## Organization
 The project is organized as follows
